@@ -1,8 +1,6 @@
-# 設計方針
+# C# コーディングルール
 
-## C# コーディングルール
-
-### 命名規則
+## 命名規則
 
 ``` csharp
 // クラス・メソッド・プロパティ
@@ -15,12 +13,12 @@ camelCase
 _camelCase
 ```
 
-### かっこ・改行・インデント
+## かっこ・改行・インデント
 
 ``` csharp
 // コメントは、 // ("//" + '(半角スペース)')
 
-// オールドマンスタイル
+// オールマン・スタイル
 //インデントはスペース4つ（VisualStudio標準）
 private void Hoge()
 {
@@ -28,7 +26,7 @@ private void Hoge()
 }
 ```
 
-### if・switch文
+## if・switch文
 
 ``` csharp
 // { } は、省略しない
@@ -48,7 +46,7 @@ var hoge = huga switch
 };
 ```
 
-### for・while
+## for・while
 
 ``` csharp
 // できるだけ、foreachをつかう
@@ -61,5 +59,5 @@ while (true)
 }
 ```
 
-### 
+## 
 
