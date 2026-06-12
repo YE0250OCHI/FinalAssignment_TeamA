@@ -62,5 +62,13 @@ while (true)
 }
 ```
 
-## 
+## その他
+
+``` csharp
+// varは、右辺がクラス名などでない限りは、使わない
+var hoge = new Huga();
+
+// var hoge = 123; これは禁止
+
+```
 
