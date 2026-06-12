@@ -36,7 +36,7 @@ if (taskCount < 1)
     return;
 }
 
-// switchは、原則多用しない
+// switchは、原則使わない（禁止ではない）
 // 可能であれば、Switch式をつかう
 var hoge = huga switch
 {
