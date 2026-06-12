@@ -40,7 +40,8 @@ if (taskCount < 1)
 
 // switchは、原則使わない（禁止ではない）
 // 可能であれば、Switch式をつかう
-var hoge = huga switch
+int huga;
+string hoge = huga switch
 {
     1 => "abc",
     2 => "def",
