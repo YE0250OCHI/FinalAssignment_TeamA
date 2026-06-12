@@ -30,7 +30,7 @@ private void Hoge()
 
 ``` csharp
 // { } は、省略しない
-// 可能な限り早期リターン
+// 可能であれば、早期リターン
 if (taskCount < 1)
 {
     return;
