@@ -1,12 +1,20 @@
-# API仕様書
-
 ## 概要
 
 ### サーバーAPI一覧
 
-|作業名|利用者|メソッド|URI|クエリ|Reqボディ|Resボディ|運用E|構文E|認証E|リソースE|
+|作業名|利用者|メソッド|URI|ｸｴﾘ|ReqB|ResB|422|400|403|404|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |出庫依頼の作成|スマホ|POST|/api/v1/picking-orders|-|○|-|○|○|○|-|
+|未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|
+|出庫依頼履歴取得|スマホ|GET|/api/v1/picking-orders/history|○|-|○|-|○|○|-|
+|出庫依頼のキャンセル|スマホ|POST|/api/v1/picking-orders/{id}/cancel|-|-|-|○|-|○|○|
+|商品一覧取得|スマホ|GET|/api/v1/picking-orders/items|-|-|○|-|-|○|-|
+|オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|○|○|○|○|-|
+|次出庫JOB問合せ|自動倉庫|POST|/api/v1/racks/job|-|-|☆|○|○|○|-|
+|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|☆|○|-|○|○|
+|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|☆|○|-|○|○|
+|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|
+
 
 
 ## 出庫依頼
