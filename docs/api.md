@@ -125,21 +125,84 @@ GET /api/v1/picking-orders/history
 
 #### クエリパラメータ
 
-|項目|値パラメータ名|パラメータ値|記載例|
-|:---|:---|:---|:---|
-|終了日フィルタ（開始）|from|検索の始め|from=2026-05-16|
-|終了日フィルタ（開始）|to|検索の終わり|to=2026-05-16|
-|並び順（最新順）|sort|latest|from=latest|
-|並び順（登録順）|sort|register|sort=register|
+|項目|必須|値パラメータ名|パラメータ値|記載例|
+|:---|:---:|:---|:---|:---|
+|終了日フィルタ（開始）|-|from|検索の始め|from=2026-06-16|
+|終了日フィルタ（開始）|-|to|検索の終わり|to=2026-06-16|
+|並び順（最新順）|sort|※|latest|from=latest|
+|並び順（登録順）|sort|※|oldest|sort=oldest|
 
-※並び順パラメータなしの場合、最新順を標準とする
+※並び順は、どちらかを必ず指定すること
+
+URL例
+``` http
+GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
+```
 
 ### レスポンス
 
+#### 200 OK
 
+取得成功：終了した出庫JOBの一覧
+``` json
+{
+  "count" : 3,
+  "results" : [
+    {
+      "jobId" : "J20260616-48",
+      "itemCode" : "I02",
+      "itemName" : "部品B",
+      "status" : "Aborted",
+      "closedAt" : "2026-06-16T17:01:00"
+    },
+    {
+      "jobId" : "J20260616-51",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "Canceled",
+      "closedAt" : "2026-06-16T16:58:00"
+    },
+    {
+      "jobId" : "J20260616-44",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "Completed",
+      "closedAt" : "2026-06-16T16:55:00"
+    }
+  ]
+}
+```
 
+取得成功：履歴がないとき
+``` json
+{
+  "count" : 0,
+  "results" : []
+}
+```
 
+**status補足**
+- Completed：完了（正常終了）
+- Canceled：キャンセル済み
+- Aborted：異常終了
 
+#### 400 Bad Request
+
+クエリパラメータ異常
+``` json
+{
+  "error" : "INVALID_QUERY"
+}
+```
+
+#### 403 Forbidden
+
+未登録の端末からの要求
+``` json
+{
+  "error" : "UNREGISTERED_DEVICE"
+}
+```
 
 ## 出庫依頼キャンセル
 
