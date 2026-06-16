@@ -50,7 +50,7 @@ POST /api/v1/picking-orders
 出庫したい商品ID
 ``` json
 {
-  "itemId": "I01"
+  "itemCode" : "I01"
 }
 ```
 
@@ -58,10 +58,10 @@ POST /api/v1/picking-orders
 
 #### 201 Created
 
-出庫JOBの作成に成功
+作成成功：採番されたJOB番号を返す
 ``` json
 {
-  "jobId": "J20260616-01"
+  "jobId" : "J20260616-01"
 }
 ```
 
@@ -70,14 +70,14 @@ POST /api/v1/picking-orders
 商品IDが不正
 ``` json
 {
-  "error": "INVALID_PRODUCT_ID"
+  "error" : "INVALID_PRODUCT_ID"
 }
 ```
 
 在庫がない
 ``` json
 {
-  "error": "OUT_OF_STOCK"
+  "error" : "OUT_OF_STOCK"
 }
 ```
 
@@ -86,7 +86,7 @@ POST /api/v1/picking-orders
 リクエスト形式が不正
 ``` json
 {
-  "error": "INVALID_REQUEST"
+  "error" : "INVALID_REQUEST"
 }
 ```
 
@@ -95,7 +95,7 @@ POST /api/v1/picking-orders
 未登録の端末からの要求
 ``` json
 {
-  "error": "UNREGISTERED_DEVICE"
+  "error" : "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -122,6 +122,17 @@ GET /api/v1/picking-orders
 ``` http
 GET /api/v1/picking-orders/history
 ```
+
+#### クエリパラメータ
+
+|項目|値パラメータ名|パラメータ値|記載例|
+|:---|:---|:---|:---|
+|終了日フィルタ（開始）|from|検索の始め|from=2026-05-16|
+|終了日フィルタ（開始）|to|検索の終わり|to=2026-05-16|
+|並び順（最新順）|sort|latest|from=latest|
+|並び順（登録順）|sort|register|sort=register|
+
+※並び順パラメータなしの場合、最新順を標準とする
 
 ### レスポンス
 
@@ -168,6 +179,21 @@ GET /api/v1/picking-orders/items
 POST /api/v1/racks/online
 ```
 
+#### リクエストボディ
+
+オンライン試行時の装置情報（装置ID、空き容量、在庫情報）
+``` json
+{
+  "equipmentId" : "AS01",
+  "availableCapacity" : 47,
+  "stocks" : [
+    { "itemId" : "I01-260616-001" },
+    { "itemId" : "I01-260616-021" },
+    { "itemId" : "I01-260616-043" }
+  ]
+}
+```
+
 ### レスポンス
 
 
@@ -185,8 +211,20 @@ POST /api/v1/racks/job
 
 ### レスポンス
 
+#### 200 OK
 
+出庫JOBが存在している
+``` json
+{
+  "jobId" : "J20260616-01",
+  "jobType" : "PICKING",
+  "itemCode" : "I01",
+  "itemId" : "I01-260616-004",
+  "equipmentId" : "AS01"
+}
+```
 
+#### 204 No Content
 
 
 
@@ -243,11 +281,28 @@ POST /api/v1/racks/job/{id}/remove
 POST /api/v1/racks/putaway-order
 ```
 
+入庫したい品種
+``` json
+{
+  "equipmentId" : "AS01",
+  "itemCode" : "I04"
+}
+```
+
 ### レスポンス
 
+#### 201 Created
 
-
-
+作成成功：入庫JOBデータを返却
+``` json
+{
+  "jobId" : "J20260616-22",
+  "jobType" : "PUTAWAY",
+  "itemCode" : "I04",
+  "itemId" : "I04-260616-037",
+  "equipmentId" : "AS01"
+}
+```
 
 
 ## エラー報告
@@ -256,6 +311,15 @@ POST /api/v1/racks/putaway-order
 
 ``` http
 POST /api/v1/racks/errors
+```
+
+装置に発生したエラー（アラーム）
+``` json
+{
+  "equipmentId" : "AS01",
+  "alarmCode" : "EMERGENCY_OFF",
+  "occurredAt": "2026-06-16T15:30:00Z"
+}
 ```
 
 ### レスポンス
@@ -271,6 +335,17 @@ POST /api/v1/racks/errors
 
 ``` http
 POST /api/v1/next-picking-order　　　
+```
+
+出庫JOBデータ
+``` json
+{
+  "jobId" : "J20260616-01",
+  "jobType" : "PICKING",
+  "itemCode" : "I01",
+  "itemId" : "I01-260616-004",
+  "equipmentId" : "AS01"
+}
 ```
 
 ### レスポンス
