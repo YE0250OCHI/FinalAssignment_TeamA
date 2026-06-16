@@ -273,8 +273,7 @@ JOB完了
 |job_type_id|INT|○|FK|JOB種別|
 |job_status_id|INT|○|FK|JOB状態|
 |item_code|VARCHAR(10)|○|FK|品種番号|
-|item_id|VARCHAR(20)|○|FK|商品個別ID|
-|equipment_id|VARCHAR(10)|○|FK|設備ID|
+|item_id|VARCHAR(20)|-|FK|商品個別ID|
 |created_at|DATETIME|-|-|作成日時|
 |delivered_at|DATETIME|-|-|JOB配信日時|
 |initiated_at|DATETIME|-|-|作業開始日時|
