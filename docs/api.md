@@ -41,9 +41,9 @@
 
 ***
 
-# 出庫依頼の作成
+## 出庫依頼の作成
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/picking-orders
@@ -58,7 +58,7 @@ POST /api/v1/picking-orders
 
 ## 未完了出庫依頼取得
 
- ## リクエスト
+### リクエスト
 
 ``` http
 GET /api/v1/picking-orders
@@ -73,7 +73,7 @@ GET /api/v1/picking-orders
 
 ## 出庫依頼履歴取得
 
- ## リクエスト
+### リクエスト
 
 ``` http
 GET /api/v1/picking-orders/history
@@ -88,7 +88,7 @@ GET /api/v1/picking-orders/history
 
 ## 出庫依頼キャンセル
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/picking-orders/{id}/cancel
@@ -103,7 +103,7 @@ POST /api/v1/picking-orders/{id}/cancel
 
 ## 商品一覧取得
 
- ## リクエスト
+### リクエスト
 
 ``` http
 GET /api/v1/picking-orders/items
@@ -118,7 +118,7 @@ GET /api/v1/picking-orders/items
 
 ## オンライン要求
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/online
@@ -133,7 +133,7 @@ POST /api/v1/racks/online
 
 ## 次出庫JOB問合せ
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/job
@@ -148,7 +148,7 @@ POST /api/v1/racks/job
 
 ## JOB作業開始報告
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/job/{id}/initiate
@@ -163,7 +163,7 @@ POST /api/v1/racks/job/{id}/initiate
 
 ## JOB作業完了報告
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/job/{id}/complete
@@ -178,7 +178,7 @@ POST /api/v1/racks/job/{id}/complete
 
 ## 取出し完了報告
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/job/{id}/remove
@@ -193,7 +193,7 @@ POST /api/v1/racks/job/{id}/remove
 
 ## 入庫要求
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/putaway-order
@@ -208,7 +208,7 @@ POST /api/v1/racks/putaway-order
 
 ## エラー報告
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/racks/errors
@@ -223,7 +223,7 @@ POST /api/v1/racks/errors
 
 ## 次出庫JOB送信　　
 
- ## リクエスト
+### リクエスト
 
 ``` http
 POST /api/v1/next-picking-order　　　
