@@ -14,8 +14,14 @@
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|☆|○|-|○|○|
 |JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|☆|○|-|○|○|
 |取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|
+|入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|
+|エラー報告|自動倉庫|POST|/api/v1/racks/errors|-|○|-|-|○|○|-|
 
+### 自動倉庫スタブAPI一覧
 
+|作業名|利用者|メソッド|URI|ｸｴﾘ|Req|Res|422|400|403|404|
+|:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|次出庫JOB送信|サーバー|POST|/api/v1/next-picking-order|-|○|-|○|○|-|-|
 
 ## 出庫依頼
 
