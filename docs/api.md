@@ -110,10 +110,79 @@ GET /api/v1/picking-orders
 
 ### レスポンス
 
+#### 200 OK
 
+取得成功：作業途中のJOB一覧
+``` json
+{
+  "count" : 6,
+  "results" : [
+    {
+      "jobId" : "J20260616-49",
+      "itemCode" : "I02",
+      "itemName" : "部品B",
+      "status" : "Recovering",
+      "equipmentId" : null,
+      "canCancel": true
+    },
+    {
+      "jobId" : "J20260616-50",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "WaitOut",
+      "equipmentId" : "AS01",
+      "canCancel": false
+    },
+    {
+      "jobId" : "J20260616-51",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "Working",
+      "equipmentId" : "AS03",
+      "canCancel": false
+    },
+    {
+      "jobId" : "J20260616-52",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "Waiting",
+      "equipmentId" : "AS04",
+      "canCancel": false
+    },
+    {
+      "jobId" : "J20260616-53",
+      "itemCode" : "I03",
+      "itemName" : "部品C",
+      "status" : "Waiting",
+      "equipmentId" : "AS05",
+      "canCancel": true
+    },
+    {
+      "jobId" : "J20260616-54",
+      "itemCode" : "I01",
+      "itemName" : "部品A",
+      "status" : "Waiting",
+      "equipmentId" : null,
+      "canCancel": true
+    }
+  ]
+}
+```
 
+**status補足**
+- Waiting：作業開始前
+- Working：出庫作業中
+- WaitOut：商品取出待ち
+- Recovering：異常発生により復旧・再割当処理中
 
+#### 403 Forbidden
 
+未登録の端末からの要求
+``` json
+{
+  "error" : "UNREGISTERED_DEVICE"
+}
+```
 
 ## 出庫依頼履歴取得
 
@@ -152,6 +221,7 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-48",
       "itemCode" : "I02",
       "itemName" : "部品B",
+      "equipmentId" : "AS02",
       "status" : "Aborted",
       "closedAt" : "2026-06-16T17:01:00"
     },
@@ -159,6 +229,7 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-51",
       "itemCode" : "I01",
       "itemName" : "部品A",
+      "equipmentId" : "AS01",
       "status" : "Canceled",
       "closedAt" : "2026-06-16T16:58:00"
     },
@@ -166,6 +237,7 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-44",
       "itemCode" : "I01",
       "itemName" : "部品A",
+      "equipmentId" : "AS01",
       "status" : "Completed",
       "closedAt" : "2026-06-16T16:55:00"
     }
