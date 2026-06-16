@@ -266,8 +266,8 @@ JOB完了
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|CHAR(14)|○|PK|JOB ID|
-|job_type_id|INT|○|-|JOB種別|
-|job_status_id|INT|○|-|JOB状態|
+|job_type_id|INT|○|FK|JOB種別|
+|job_status_id|INT|○|FK|JOB状態|
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|○|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|○|FK|設備ID|
@@ -278,20 +278,13 @@ JOB完了
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
 |closed_at|DATETIME|-|-|終了日時|
 
-### item_types：商品マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|code|VARCHAR(10)|○|PK|品種番号|
-|name|NVARCHAR(50)|○|-|商品名|
-
 ### items：商品在庫状態
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(20)|○|PK|商品個別ID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
-|item_status_id|INT|○|-|在庫状態|
+|item_status_id|INT|○|FK|在庫状態|
 |stored_at|DATETIME|-|-|入庫日時|
 |shipped_at|DATETIME|-|-|出庫日時|
 
@@ -302,44 +295,40 @@ JOB完了
 |id|VARCHAR(10)|○|PK|設備ID|
 |equipment_status_id|INT|○|FK|設備状態|
 
-## 状態定義
+### item_types：商品マスタ
 
-　今回のシステムでは、状態の定義はenumで定義する。
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|code|VARCHAR(10)|○|PK|品種番号|
+|name|NVARCHAR(50)|○|-|商品名|
 
-### job_types : 入出庫どちらか
+### item_status : 商品在庫状態
 
-|値|キー名|
-|:---:|:---|
-|0|Picking|
-|1|PutAway|
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|INT|○|PK|状態キー|
+|name|NVARCHAR(10)|○|-|状態名|
 
-### job_status : JOB進捗
+### job_types : JOB入出庫方向
 
-|値|キー名|
-|:---:|:---|
-|0|NotAssign|
-|1|Assigned|
-|2|Picking|
-|3|WaitOut|
-|4|Putting|
-|5|Completed|
-|6|Canceled|
-|7|Failed|
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|INT|○|PK|状態キー|
+|name|NVARCHAR(10)|○|-|状態名|
 
-### item_status : 在庫状態
+### job_status : JOB状態
 
-|値|キー名|
-|:---:|:---|
-|0|Stored|
-|1|Reserved|
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|INT|○|PK|状態キー|
+|name|NVARCHAR(10)|○|-|状態名|
 
 ### equipment_status : 自動倉庫設備状態
 
-|値|キー名|
-|:---:|:---|
-|0|Offline|
-|1|Available|
-|2|Busy|
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|INT|○|PK|状態キー|
+|name|NVARCHAR(10)|○|-|状態名|
 
 
 
