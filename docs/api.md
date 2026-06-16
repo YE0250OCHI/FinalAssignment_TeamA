@@ -4,7 +4,7 @@
 
 |作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|403|404|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|出庫依頼の作成|スマホ|POST|/api/v1/picking-orders|-|○|-|○|○|○|-|
+|出庫依頼の作成|スマホ|POST|/api/v1/picking-orders|-|○|○|○|○|○|-|
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|
 |出庫依頼履歴取得|スマホ|GET|/api/v1/picking-orders/history|○|-|○|-|○|○|-|
 |出庫依頼キャンセル|スマホ|POST|/api/v1/picking-orders/{id}/cancel|-|-|-|○|-|○|○|
@@ -45,9 +45,27 @@
 POST /api/v1/picking-orders
 ```
 
+#### リクエストボディ
+
+出庫したい商品ID
+``` json
+{
+  "itemId": "I01"
+}
+```
+
 ### レスポンス
 
+#### 201 Created
 
+出庫JOBの作成に成功
+``` json
+{
+  "jobId": "J20260616-01"
+}
+```
+
+#### 422 Unprocessable Content
 
 
 
