@@ -8,7 +8,8 @@
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|
 |出庫依頼履歴取得|スマホ|GET|/api/v1/picking-orders/history|○|-|○|-|○|○|-|
 |出庫依頼キャンセル|スマホ|POST|/api/v1/picking-orders/{id}/cancel|-|-|-|○|-|○|○|
-|商品一覧取得|スマホ|GET|/api/v1/picking-orders/items|-|-|○|-|-|○|-|
+|在庫一覧取得|スマホ|GET|/api/v1/items|-|-|○|-|-|○|-|
+|出庫可能商品一覧取得|スマホ|GET|/api/v1/items/available|-|-|○|-|-|○|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|○|○|○|○|-|
 |次出庫JOB問合せ|自動倉庫|POST|/api/v1/racks/job|-|-|☆|○|○|○|-|
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|☆|○|-|○|○|
@@ -169,6 +170,14 @@ GET /api/v1/picking-orders
 }
 ```
 
+取得成功：履歴がないとき
+``` json
+{
+  "count" : 0,
+  "results" : []
+}
+```
+
 **status補足**
 - Waiting：作業開始前
 - Working：出庫作業中
@@ -286,25 +295,133 @@ POST /api/v1/picking-orders/{id}/cancel
 
 ### レスポンス
 
+#### 204 No Content
 
+キャンセル遷移に成功
+``` json
+なし
+```
 
+#### 422 Unprocessable Content
 
+キャンセル遷移に失敗（キャンセルができない）
+``` json
+{
+  "error" : "INVALID_STATUS"
+}
+```
 
+#### 403 Forbidden
 
-## 商品一覧取得
+未登録の端末からの要求
+``` json
+{
+  "error" : "UNREGISTERED_DEVICE"
+}
+```
+
+#### 404 Not Found
+
+指定されたJOBが存在しない（idが間違っている）
+``` json
+{
+  "error" : "JOB_NOT_FOUND"
+}
+```
+
+## 商品在庫状況取得
 
 ### リクエスト
 
 ``` http
-GET /api/v1/picking-orders/items
+GET /api/v1/items
 ```
 
 ### レスポンス
 
+### 200 OK
 
+商品マスタに登録されている商品の在庫状況
+``` json
+[
+  {
+    "itemCode" : "I01",
+    "itemName" : "部品A",
+    "stockCount" : 10
+  },
+  {
+    "itemCode" : "I02",
+    "itemName" : "部品B",
+    "stockCount" : 0
+  },
+  {
+    "itemCode" : "I03",
+    "itemName" : "部品C",
+    "stockCount" : 7
+  },
+  {
+    "itemCode" : "I04",
+    "itemName" : "部品D",
+    "stockCount" : 12
+  },
+  {
+    "itemCode" : "I05",
+    "itemName" : "部品E",
+    "stockCount" : 0
+  }
+]
+```
 
+#### 403 Forbidden
 
+未登録の端末からの要求
+``` json
+{
+  "error" : "UNREGISTERED_DEVICE"
+}
+```
 
+## 出庫可能な商品一覧取得
+
+### リクエスト
+
+``` http
+GET /api/v1/items/available
+```
+
+### レスポンス
+
+### 200 OK
+
+現在出庫可能な商品の一覧（在庫あり品のみ）
+``` json
+[
+  {
+    "itemCode" : "I01",
+    "itemName" : "部品A",
+    "stockCount" : 10
+  },
+  {
+    "itemCode" : "I03",
+    "itemName" : "部品C",
+    "stockCount" : 7
+  },
+  {
+    "itemCode" : "I04",
+    "itemName" : "部品D",
+    "stockCount" : 12
+  }
+]
+```
+
+#### 403 Forbidden
+
+未登録の端末からの要求
+``` json
+{
+  "error" : "UNREGISTERED_DEVICE"
+}
+```
 
 ## オンライン要求
 
