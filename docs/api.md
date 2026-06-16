@@ -67,7 +67,37 @@ POST /api/v1/picking-orders
 
 #### 422 Unprocessable Content
 
+商品IDが不正
+``` json
+{
+  "error": "INVALID_PRODUCT_ID"
+}
+```
 
+在庫がない
+``` json
+{
+  "error": "OUT_OF_STOCK"
+}
+```
+
+#### 400 Bad Request
+
+リクエスト形式が不正
+``` json
+{
+  "error": "INVALID_REQUEST"
+}
+```
+
+#### 403 Forbidden
+
+未登録の端末からの要求
+``` json
+{
+  "error": "UNREGISTERED_DEVICE"
+}
+```
 
 
 ## 未完了出庫依頼取得
