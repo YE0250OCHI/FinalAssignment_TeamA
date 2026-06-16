@@ -65,6 +65,9 @@ while (true)
 ## その他
 
 ``` csharp
+// ファイルスコープ名前空間を使用すること
+namespace Sample.App;
+
 // varは、右辺がクラス名などでない限りは、使わない
 var hoge = new Huga();
 
