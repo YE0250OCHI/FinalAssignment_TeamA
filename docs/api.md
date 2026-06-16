@@ -129,8 +129,8 @@ GET /api/v1/picking-orders/history
 |:---|:---:|:---|:---|:---|
 |終了日フィルタ（開始）|-|from|検索の始め|from=2026-06-16|
 |終了日フィルタ（開始）|-|to|検索の終わり|to=2026-06-16|
-|並び順（最新順）|sort|※|latest|from=latest|
-|並び順（登録順）|sort|※|oldest|sort=oldest|
+|並び順（最新順）|※|sort|latest|from=latest|
+|並び順（登録順）|※|sort|oldest|sort=oldest|
 
 ※並び順は、どちらかを必ず指定すること
 
