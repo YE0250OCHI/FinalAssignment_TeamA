@@ -14,7 +14,7 @@
 
 - 起動直後および異常発生時に移行
 - サーバーへオンライン化報告を実行
-- 在庫情報（商品番号：品種ID-入庫日-枝番）と空き容量を送信
+- 棚IDと在庫情報（商品番号：品種ID-入庫日-枝番）、空き容量を送信
 
 ### 待機状態
 
@@ -26,14 +26,14 @@
 
 ### 入庫動作の流れ
 
-- コンソール入力を待機 (品種ID)
-- サーバーに入庫情報 (品種ID) を送信
-- サーバーからのレスポンス（JOB番号・商品番号）を受信
+- コンソール入力を待機 (品種番号)
+- サーバーに入庫情報 (品種番号) を送信
+- サーバーからのレスポンス（JOB番号・商品個別ID）を受信
 - 正常レスポンス
   - 入庫開始フラグを送信
   - 入庫動作の完了を待機 (今回はコンソール入力で代用)
   - 入庫完了フラグを送信
-  - 待機モードに戻る
+  - 待機状態に戻る
 - エラーレスポンス（422）
   - エラー内容を表示
   - 待機状態に戻る 
@@ -50,14 +50,32 @@
 - 取出完了フラグを送信
 - 待機状態に戻る
 
-## DB定義
+オンライン通知
 
-棚マスタ（テーブル名：master）
-|No.|項目名|カラム名|データ型|長さ|NOT NULL|PK|備考|
-|---:|:---|:---|:---|:---:|:---:|:---:|:---|
-|1.|棚番号|block_id|int||〇|〇|1～50|
-|2.|ブロック名|block_name|varchar|20|〇||A-1～A-50|
-|2.|使用可能フラグ|block_status|bit||〇||Default:1|
+<img width="596" height="382" alt="image" src="https://github.com/user-attachments/assets/d9e12777-30db-4d9b-a374-fb5cd769350b" />
+
+待機中フロー
+
+<img width="861" height="356" alt="image" src="https://github.com/user-attachments/assets/edf5f345-5b13-4487-98c1-7b210fc56be9" />
+
+出庫指示受付フロー
+
+<img width="1047" height="557" alt="image" src="https://github.com/user-attachments/assets/113ffc0b-58df-49d9-9368-4399a5ca6d7b" />
+
+入庫操作受付フロー
+
+<img width="612" height="505" alt="image" src="https://github.com/user-attachments/assets/6a438f6d-8844-4a3e-ac1e-559affd392d3" />
+
+出庫動作
+
+<img width="731" height="482" alt="image" src="https://github.com/user-attachments/assets/fa32309c-a8dd-47cc-bdfc-9bad865f5e0d" />
+
+入庫動作
+
+<img width="392" height="522" alt="image" src="https://github.com/user-attachments/assets/ed3c1fac-2e4d-4ee4-b9dc-2d97d39d7c88" />
+
+
+## DB定義
 
 棚在庫テーブル（テーブル名：inventory）
 |No.|項目名|カラム名|データ型|長さ|NOT NULL|PK|備考|
@@ -65,7 +83,7 @@
 |1.|棚番号|block_id|int||〇|〇|1～50|
 |2.|商品個別ID|item_id|varchar|50|||品種ID-入庫日-枝番|
 
-<img width="642" height="340" alt="image" src="https://github.com/user-attachments/assets/5d69c389-e0f7-4844-89ef-eec25e11b008" />
+
 
 ## 表示
 
@@ -137,6 +155,7 @@ Nlog
   - 入庫：作業完了まで在庫情報は登録しない
 - 通信のイレギュラーは基本異常終了
 - Ctrl＋Cへの対策を追加
+- JSON変換時に大文字・小文字を無視する
 
 
 
