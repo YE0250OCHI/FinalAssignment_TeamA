@@ -39,7 +39,7 @@
 - 422～404：エラーステータスコードの実装有無
 
 
-***
+
 
 ## 出庫依頼の作成
 
@@ -54,7 +54,7 @@ POST /api/v1/picking-orders
 
 
 
-***
+
 
 ## 未完了出庫依頼取得
 
@@ -69,7 +69,7 @@ GET /api/v1/picking-orders
 
 
 
-***
+
 
 ## 出庫依頼履歴取得
 
@@ -84,7 +84,7 @@ GET /api/v1/picking-orders/history
 
 
 
-***
+
 
 ## 出庫依頼キャンセル
 
@@ -99,7 +99,7 @@ POST /api/v1/picking-orders/{id}/cancel
 
 
 
-***
+
 
 ## 商品一覧取得
 
@@ -114,7 +114,7 @@ GET /api/v1/picking-orders/items
 
 
 
-***
+
 
 ## オンライン要求
 
@@ -129,7 +129,7 @@ POST /api/v1/racks/online
 
 
 
-***
+
 
 ## 次出庫JOB問合せ
 
@@ -144,7 +144,7 @@ POST /api/v1/racks/job
 
 
 
-***
+
 
 ## JOB作業開始報告
 
@@ -159,7 +159,7 @@ POST /api/v1/racks/job/{id}/initiate
 
 
 
-***
+
 
 ## JOB作業完了報告
 
@@ -174,7 +174,7 @@ POST /api/v1/racks/job/{id}/complete
 
 
 
-***
+
 
 ## 取出し完了報告
 
@@ -189,7 +189,7 @@ POST /api/v1/racks/job/{id}/remove
 
 
 
-***
+
 
 ## 入庫要求
 
@@ -204,7 +204,7 @@ POST /api/v1/racks/putaway-order
 
 
 
-***
+
 
 ## エラー報告
 
@@ -219,7 +219,7 @@ POST /api/v1/racks/errors
 
 
 
-***
+
 
 ## 次出庫JOB送信　　
 
