@@ -113,7 +113,7 @@ JOB完了
 
 ## 状態定義・遷移
 																	
-<img width="2842" height="2853" alt="image" src="https://github.com/user-attachments/assets/0fc136e4-3781-4af2-b767-f26fc1e9bb06" />
+<img width="2842" height="2814" alt="image" src="https://github.com/user-attachments/assets/235d8700-350a-49b8-b2e6-a7da5fa5a5e4" />
 
 ## JOB配信仕様
 
