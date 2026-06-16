@@ -347,30 +347,39 @@ GET /api/v1/items
   {
     "itemCode" : "I01",
     "itemName" : "部品A",
-    "stockCount" : 10
+    "stockCount" : 10,
+    "availableCount" : 6
   },
   {
     "itemCode" : "I02",
     "itemName" : "部品B",
-    "stockCount" : 0
+    "stockCount" : 0,
+    "availableCount" : 0
   },
   {
     "itemCode" : "I03",
     "itemName" : "部品C",
-    "stockCount" : 7
+    "stockCount" : 7,
+    "availableCount" : 7
   },
   {
     "itemCode" : "I04",
     "itemName" : "部品D",
-    "stockCount" : 12
+    "stockCount" : 12,
+    "availableCount" : 10
   },
   {
     "itemCode" : "I05",
     "itemName" : "部品E",
-    "stockCount" : 0
+    "stockCount" : 0,
+    "availableCount" : 0
   }
 ]
 ```
+
+**補足**
+- stockCount：総在庫数（物理的に保管されている在庫数）
+- availableCount：出庫可能な個数（JOBに予約分を除いた個数）
 
 #### 403 Forbidden
 
@@ -399,20 +408,27 @@ GET /api/v1/items/available
   {
     "itemCode" : "I01",
     "itemName" : "部品A",
-    "stockCount" : 10
+    "stockCount" : 10,
+    "availableCount" : 6
   },
   {
     "itemCode" : "I03",
     "itemName" : "部品C",
-    "stockCount" : 7
+    "stockCount" : 7,
+    "availableCount" : 7
   },
   {
     "itemCode" : "I04",
     "itemName" : "部品D",
-    "stockCount" : 12
+    "stockCount" : 12,
+    "availableCount" : 10
   }
 ]
 ```
+
+**補足**
+- stockCount：総在庫数（物理的に保管されている在庫数）
+- availableCount：出庫可能な個数（JOBに予約分を除いた個数）
 
 #### 403 Forbidden
 
