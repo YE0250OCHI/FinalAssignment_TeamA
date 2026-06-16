@@ -83,13 +83,12 @@
 |1.|棚番号|block_id|int||〇|〇|1～50|
 |2.|商品個別ID|item_id|varchar|50|||品種ID-入庫日-枝番|
 
-
+<img width="232" height="281" alt="image" src="https://github.com/user-attachments/assets/67aa2af9-38a0-4d08-a7e7-70fd4facb780" />
 
 ## 表示
 
 アプリ起動
 ``` text
-========== 入出庫棚 ==========
 オンライン通知：サーバーからのレスポンスを待っています……
 
 
@@ -102,7 +101,7 @@ F1:出庫操作モード
 
 ==============================
 JOB番号：XXXX
-商品番号：XXX-YYYYMMDD-ZZZZ
+個別ID：XXX-YYYYMMDD-ZZZZ
 出庫完了(Enter)＞
 取出完了(Enter)＞
 
