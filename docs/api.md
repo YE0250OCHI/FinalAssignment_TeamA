@@ -7,7 +7,7 @@
 |出庫依頼の作成|スマホ|POST|/api/v1/picking-orders|-|○|-|○|○|○|-|
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|
 |出庫依頼履歴取得|スマホ|GET|/api/v1/picking-orders/history|○|-|○|-|○|○|-|
-|出庫依頼のキャンセル|スマホ|POST|/api/v1/picking-orders/{id}/cancel|-|-|-|○|-|○|○|
+|出庫依頼キャンセル|スマホ|POST|/api/v1/picking-orders/{id}/cancel|-|-|-|○|-|○|○|
 |商品一覧取得|スマホ|GET|/api/v1/picking-orders/items|-|-|○|-|-|○|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|○|○|○|○|-|
 |次出庫JOB問合せ|自動倉庫|POST|/api/v1/racks/job|-|-|☆|○|○|○|-|
