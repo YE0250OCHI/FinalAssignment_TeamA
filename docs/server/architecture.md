@@ -153,8 +153,6 @@ JOB完了
 |Stored|商品が棚に保管されている|
 |Reserved|商品がJOBに割り当てられて、作業開始を待っている|
 
-***
-
 ## 状態定義・遷移
 
 <img width="2835" height="4564" alt="image" src="https://github.com/user-attachments/assets/cfa6468b-bff5-412b-8bd6-09f67878d963" />
