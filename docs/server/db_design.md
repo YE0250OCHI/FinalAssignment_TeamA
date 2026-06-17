@@ -9,7 +9,7 @@
 |id|CHAR(14)|○|PK|JOB ID|
 |job_type_id|INT|○|FK|JOB種別|
 |job_status_id|INT|○|FK|JOB状態|
-|device_id|VARCHAR(10)|○|FK|スマホID|
+|device_id|VARCHAR(10)|-|FK|スマホID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|-|FK|装置ID|
@@ -21,11 +21,12 @@
 |closed_at|DATETIME|-|-|終了日時|
 
 - JOBの詳細、状態を表すテーブル
-- item_id、equipment_idは商品の割当を行うまではNULL状態となる
-- delivered_at～removed_atは、各状態の開始日時を表す
+- equipment_id は商品の割当を行うまでは NULL 状態となる
+- item_id は出庫JOBでは商品の割当時、入庫JOBではJOB作成時に設定する
+- delivered_at～removed_atは、状態遷移日時を表す
   - タイムアウト監視に利用する
   - 再割当等により状態が戻る場合はNULLに戻す
-- closed_atがNULLではない場合、そのJOBはクローズしたものとみなす
+- closed_at が設定されたJOBは履歴扱いとする
 
 ### items：商品在庫データ
 
@@ -35,7 +36,7 @@
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |stock_status_id|INT|○|FK|在庫状態|
 |equipment_id|VARCHAR(10)|○|FK|在庫保持している装置ID|
-|created_at|DATETIME|○|-|作成日時（入庫日時）|
+|registered_at|DATETIME|○|-|登録日時（入庫日時）|
 
 - サーバー管理下にある商品の在庫状態を表すテーブル
 - 商品は搬送開始で管理外とし、物理削除を行う
@@ -49,11 +50,16 @@
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(10)|○|PK|設備ID|
-|status_id|○|FK|オンライン状況|
-|exec_job_id|CHAR(14)|-|FK|実行中のJOB番号|
+|status_id|INT|○|FK|オンライン状況|
+|picking_job_id|CHAR(14)|-|FK|割り当てられた出庫JOB番号|
+|putaway_job_id|CHAR(14)|-|FK|割り当てられた入庫JOB番号|
 
 - サーバー管理下にある自動倉庫設備の状態を管理するテーブル
-- 自動倉庫のオンライン状態および作業可否の管理に利用する
+- 自動倉庫のオンライン状態および担当JOBを管理するために利用する
+- picking_job_id は、当該設備に割り当てられている出庫JOBを表す
+- putaway_job_id は、当該設備に割り当てられている入庫JOBを表す
+  - 各JOB ID は、該当するJOBが存在しない場合は NULL とする
+  - JOBが完了、キャンセル、異常終了した場合は NULL に戻す
 
 ### devices：スマートフォン端末マスタ
 
@@ -77,11 +83,10 @@
 - 商品の品種を管理するためのマスタ
 - 商品在庫状態の商品個別IDを、品種単位で分類するために利用する
 - 商品個別IDの採番情報を保持する
-- 商品IDの採番時には、current_sequenceを参照する
-- 参照時に今日の日付と最終採番日時が異なる場合は、0リセットを行う
-- 採番時は採番管理レコードをトランザクション内で更新し、同時採番による重複を防止する
+- 商品IDの採番時に重複しないように、current_sequenceを参照する
+- 採番時に最終採番日が当日でない場合は連番を1から再開始する
 
-### job_status : JOB状態マスタ
+### job_statuses : JOB状態マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
@@ -101,7 +106,7 @@
 - JOB種別を表すマスタ
 - JOBの種別を管理・識別するために利用する
 
-### equipment_status : 自動倉庫設備状態マスタ
+### equipment_statuses : 自動倉庫設備状態マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
@@ -111,7 +116,7 @@
 - 自動倉庫設備の状態を表すマスタ
 - 自動倉庫設備の状態を管理・識別するために利用する
 
-### stock_status : 商品在庫状態マスタ
+### stock_statuses : 商品在庫状態マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
@@ -212,12 +217,14 @@ erDiagram
         VARCHAR(10) item_code FK
         INT stock_status_id FK
         VARCHAR(10) equipment_id FK
-        DATETIME created_at
+        DATETIME registered_at
     }
 
     equipments {
         VARCHAR(10) id PK
-        INT equipment_status_id FK
+        INT status_id FK
+        CHAR(14) picking_job_id FK
+        CHAR(14) putaway_job_id FK
     }
 
     devices {
@@ -251,18 +258,21 @@ erDiagram
         NVARCHAR(15) name
     }
 
-    job_types ||--o{ jobs : "JOB種別は？"
-    job_status ||--o{ jobs : "JOB状態は？"
-    devices ||--o{ jobs : "依頼元は誰？"
-    item_types ||--o{ jobs : "要求されている商品の品種は？"
-    items ||--o{ jobs : "割り当てられた商品は？"
-    equipments ||--o{ jobs : "割り当てられた自動倉庫は？"
+    job_types ||--o{ jobs : "JOB種別"
+    job_status ||--o{ jobs : "JOB状態"
+    devices ||--o{ jobs : "依頼元端末"
+    item_types ||--o{ jobs : "要求品種"
+    items ||--o{ jobs : "割当商品"
+    equipments ||--o{ jobs : "割当設備"
 
-    item_types ||--o{ items : "商品の品種は？"
-    stock_status ||--o{ items : "商品の保管状態は？"
-    equipments ||--o{ items : "どの自動倉庫に保管されているか？"
+    item_types ||--o{ items : "品種"
+    stock_status ||--o{ items : "在庫状態"
+    equipments ||--o{ items : "保管設備"
 
-    equipment_status ||--o{ equipments : "装置の状態は？"
+    equipment_status ||--o{ equipments : "設備状態"
+
+    jobs ||--o| equipments : "割当中の出庫JOB"
+    jobs ||--o| equipments : "割当中の入庫JOB"
 ```
 
 ## データ操作方針
