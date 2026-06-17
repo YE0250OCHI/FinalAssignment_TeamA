@@ -463,7 +463,6 @@ POST /api/v1/racks/online
 オンライン試行時の装置情報（装置ID、空き容量、在庫情報）
 ``` json
 {
-  "equipmentId" : "AS01",
   "availableCapacity" : 47,
   "stocks" : [
     {
