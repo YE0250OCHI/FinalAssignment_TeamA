@@ -11,7 +11,7 @@
 |在庫一覧取得|スマホ|GET|/api/v1/items|-|-|○|-|-|○|-|
 |出庫可能商品一覧取得|スマホ|GET|/api/v1/items/available|-|-|○|-|-|○|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|○|○|○|○|-|
-|次出庫JOB問合せ|自動倉庫|POST|/api/v1/racks/job|-|-|☆|○|○|○|-|
+|次出庫JOB問合せ|自動倉庫|POST|/api/v1/racks/job|-|-|☆|○|-|○|-|
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|☆|○|-|○|○|
 |JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|☆|○|-|○|○|
 |取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|
