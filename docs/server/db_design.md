@@ -259,21 +259,20 @@ erDiagram
         NVARCHAR(15) name
     }
 
-    job_types ||--o{ jobs : "JOB種別"
-    job_status ||--o{ jobs : "JOB状態"
-    devices ||--o{ jobs : "依頼元端末"
-    item_types ||--o{ jobs : "要求品種"
-    items ||--o{ jobs : "割当商品"
-    equipments ||--o{ jobs : "割当設備"
+    jobs }o--|| job_types : "JOB種別"
+    jobs }o--|| job_status : "JOB状態"
+    jobs }o--|| devices : "依頼元端末"
+    jobs }o--|| item_types : "要求品種"
+    jobs }o--|| items : "割当商品"
+    jobs }o--|| equipments : "割当設備"
 
-    item_types ||--o{ items : "品種"
-    stock_status ||--o{ items : "在庫状態"
-    equipments ||--o{ items : "保管設備"
+    items }o--|| item_types : "品種"
+    items }o--|| stock_status : "在庫状態"
+    items }o--|| equipments : "保管設備"
 
-    equipment_status ||--o{ equipments : "設備状態"
-
-    jobs ||--o| equipments : "割当中の出庫JOB"
-    jobs ||--o| equipments : "割当中の入庫JOB"
+    equipments }o--|| equipment_status : "設備状態"
+    equipments |o--|| jobs : "割当中の出庫JOB"
+    equipments |o--|| jobs : "割当中の入庫JOB"
 ```
 
 ## データ操作方針
