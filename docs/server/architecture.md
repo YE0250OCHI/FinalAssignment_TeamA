@@ -148,7 +148,7 @@ JOB完了
 
 ## 状態定義・遷移
 
-<img width="2834" height="4557" alt="image" src="https://github.com/user-attachments/assets/604def4b-8ee5-4528-93e8-0e6ea54ad3a0" />
+<img width="2835" height="4564" alt="image" src="https://github.com/user-attachments/assets/cfa6468b-bff5-412b-8bd6-09f67878d963" />
 
 **補足**
 - 異常終了のエビデンスは、「対象品種の在庫の有無」
