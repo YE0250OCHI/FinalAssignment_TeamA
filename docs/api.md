@@ -148,7 +148,7 @@ GET /api/v1/picking-orders
       "itemName" : "部品A",
       "status" : "Waiting",
       "equipmentId" : "AS04",
-      "canCancel": false
+      "canCancel": true
     },
     {
       "jobId" : "J20260616-53",
