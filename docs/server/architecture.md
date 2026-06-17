@@ -131,6 +131,13 @@ JOB完了
 |Pending|商品の再割当を待っている|-|
 |Aborted|再割当可能な商品が存在せず、JOBが成立しなくなった|-|
 
+### JOBの入出庫方向
+
+|名称|意味|
+|:---|:---|
+|Picking|出庫JOB|
+|Putaway|入庫JOB|
+
 ### 装置状態
 
 |名称|意味|
@@ -312,83 +319,124 @@ JOB完了
 
 ***
 
-## テーブル定義
+## DB設計
 
-### jobs：JOB状態
+### jobs：JOBデータ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|CHAR(14)|○|PK|JOB ID|
 |job_type_id|INT|○|FK|JOB種別|
 |job_status_id|INT|○|FK|JOB状態|
-|device_id|INT|○|-|スマホID※|
+|device_id|VARCHAR(10)|○|FK|スマホID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|-|FK|装置ID|
-|created_at|DATETIME|-|-|作成日時|
+|created_at|DATETIME|○|-|作成日時|
 |delivered_at|DATETIME|-|-|JOB配信日時|
 |initiated_at|DATETIME|-|-|作業開始日時|
 |completed_at|DATETIME|-|-|搬送完了日時|
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
 |closed_at|DATETIME|-|-|終了日時|
 
-※スマホIDは、依頼元のIPアドレスの解決に使用する  
-　→　スマホのマスターデータは、DBに登録しない
+- JOBの詳細、状態を表すテーブル
+- item_id、equipment_idは商品の割当を行うまではNULL状態となる
+- delivered_at～removed_atは、各状態の開始日時を表す
+  - タイムアウト監視に利用する
+  - 再割当等により状態が戻る場合はNULLに戻す
+- closed_atがNULLではない場合、そのJOBはクローズしたものとみなす
 
-### items：商品在庫状態
+### items：商品在庫データ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(20)|○|PK|商品個別ID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
-|item_status_id|INT|○|FK|在庫状態|
+|stock_status_id|INT|○|FK|在庫状態|
+|equipment_id|VARCHAR(10)|○|FK|在庫保持している装置ID|
 |stored_at|DATETIME|-|-|入庫日時|
 |shipped_at|DATETIME|-|-|出庫日時|
 
-### equipments：自動倉庫設備状態
+- サーバー管理下にある商品の在庫状態を表すテーブル
+- 商品は搬送開始で管理外とし、物理削除を行う
+  - 商品が管理対象である間は、紐づく自動倉庫が必ず存在するので、装置IDはNOT NULLとする
+ 
+### equipments：自動倉庫設備データ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(10)|○|PK|設備ID|
 |equipment_status_id|INT|○|FK|設備状態|
 
-### item_types：商品マスタ
+- サーバー管理下にある自動倉庫設備の状態を管理するテーブル
+- 自動倉庫のオンライン状態および作業可否の管理に利用する
+
+### devices：スマートフォン端末マスタ
+
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|VARCHAR(10)|○|PK|スマホID|
+
+- 操作用端末のマスタ
+- JOBの依頼元端末を識別するために利用する
+- 操作用端末の状態は管理しない
+
+### item_types：品種マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |code|VARCHAR(10)|○|PK|品種番号|
 |name|NVARCHAR(50)|○|-|商品名|
 
-### item_status : 商品在庫状態
+- 商品の品種を表すマスタ
+- 商品在庫状態の商品個別IDを、品種単位で分類するために利用する
+
+### job_status : JOB状態マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|INT|○|PK|状態キー|
-|name|NVARCHAR(10)|○|-|状態名|
+|name|NVARCHAR(15)|○|-|状態名|
 
-### job_types : JOB入出庫方向
+- JOB状態を表すマスタ
+- JOBの進捗状況を管理・識別するために利用する
 
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|INT|○|PK|状態キー|
-|name|NVARCHAR(10)|○|-|状態名|
-
-### job_status : JOB状態
+### job_types : JOB種別マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|INT|○|PK|状態キー|
-|name|NVARCHAR(10)|○|-|状態名|
+|name|NVARCHAR(15)|○|-|状態名|
 
-### equipment_status : 自動倉庫設備状態
+- JOB種別を表すマスタ
+- JOBの種別を管理・識別するために利用する
+
+### equipment_status : 自動倉庫設備状態マスタ
 
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|INT|○|PK|状態キー|
-|name|NVARCHAR(10)|○|-|状態名|
+|name|NVARCHAR(15)|○|-|状態名|
 
+- 自動倉庫設備の状態を表すマスタ
+- 自動倉庫設備の状態を管理・識別するために利用する
 
+### stock_status : 商品在庫状態マスタ
 
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|id|INT|○|PK|状態キー|
+|name|NVARCHAR(15)|○|-|状態名|
+
+- 商品在庫の状態を表すマスタ
+- 商品在庫の状態を管理・識別するために利用する
+
+###  
+
+## ロギング設計
+
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
 
 
 
