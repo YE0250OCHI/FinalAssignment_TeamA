@@ -275,8 +275,8 @@ erDiagram
 |自動倉庫エラー報告|U|U/D|U|JOB状態・在庫・設備状態を更新する|
 |タイムアウト監視|R/U|R/U/D|R/U|状態に応じて再割当・異常終了を行う|
 |商品在庫一覧取得|-|R|-|品種別在庫数を取得する|
-|未完了JOB一覧取得|R|-|-|closed_atISNULLのJOBを取得する|
-|JOB履歴取得|R|-|-|closed_atISNOTNULLのJOBを取得する|
+|未完了JOB一覧取得|R|-|-|closed_at IS NULLのJOBを取得する|
+|JOB履歴取得|R|-|-|closed_at IS NOTNULLのJOBを取得する|
 
 **記号の意味**
 - C : 作成
