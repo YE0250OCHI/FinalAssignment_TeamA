@@ -1,4 +1,4 @@
-<img width="222" height="26" alt="image" src="https://github.com/user-attachments/assets/3e3f3133-c88e-4725-834e-903824d1ed15" /># API仕様書
+# API仕様書
 
 ### サーバーAPI一覧
 
