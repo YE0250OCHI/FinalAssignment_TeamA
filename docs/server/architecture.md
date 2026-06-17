@@ -289,10 +289,10 @@ JOB完了
 |id|CHAR(14)|○|PK|JOB ID|
 |job_type_id|INT|○|FK|JOB種別|
 |job_status_id|INT|○|FK|JOB状態|
+|device_id|INT|○|-|スマホID※|
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|-|FK|装置ID|
-|device_id|INT|○|-|スマホID|
 |created_at|DATETIME|-|-|作成日時|
 |delivered_at|DATETIME|-|-|JOB配信日時|
 |initiated_at|DATETIME|-|-|作業開始日時|
@@ -300,8 +300,8 @@ JOB完了
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
 |closed_at|DATETIME|-|-|終了日時|
 
-※スマホIDは、IPアドレスの解決にのみ使用する
-　→　マスターデータは、DBに登録しない
+※スマホIDは、依頼元のIPアドレスの解決に使用する
+　→　スマホのマスターデータは、DBに登録しない
 
 ### items：商品在庫状態
 
