@@ -29,7 +29,7 @@
   - 出庫要求と問合せのレスポンスが同時に来た場合、片方のみ有効
   - 出庫動作中はPull送信を停止
  
-<img width="1242" height="432" alt="image" src="https://github.com/user-attachments/assets/8e48378d-535d-4f62-839d-1378aea2336b" />
+<img width="951" height="336" alt="image" src="https://github.com/user-attachments/assets/f05578c9-ffb9-40db-88c8-206dd3fae570" />
  
 #### 入庫指示の受付
 
