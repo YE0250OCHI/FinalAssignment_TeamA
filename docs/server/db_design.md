@@ -35,12 +35,12 @@
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |stock_status_id|INT|○|FK|在庫状態|
 |equipment_id|VARCHAR(10)|○|FK|在庫保持している装置ID|
-|stored_at|DATETIME|-|-|入庫日時|
-|shipped_at|DATETIME|-|-|出庫日時|
+|created_at|DATETIME|○|-|作成日時（入庫日時）|
 
 - サーバー管理下にある商品の在庫状態を表すテーブル
 - 商品は搬送開始で管理外とし、物理削除を行う
-  - 商品が管理対象である間は、紐づく自動倉庫が必ず存在するので、装置IDはNOT NULLとする
+  - 商品が管理対象である間は、紐づく自動倉庫が必ず存在する
+  - したがって、equipment_idはNOT NULLとする
  
 ### equipments：自動倉庫設備データ
 
@@ -147,13 +147,13 @@
 |:---|:---|:------|
 |1|Unassigned|JOBが作成されたが、商品が割当られていない|
 |2|Assigned|JOBに商品が割当られた|
-|3|Delivered|自動倉庫にJOBが配信された|
+|3|Delivered|自動倉庫にJOBを配信し、開始報告を待っている|
 |4|Picking|自動倉庫が出庫を始めた|
 |5|WaitOut|出庫が完了したが、商品が取り出されていない|
 |6|Putaway|自動倉庫が入庫を始めた|
 |7|Completed|JOBが完了した|
 |8|Canceled|JOBがキャンセルされた|
-|9|Interrupted|JOB実行中の異常により、処理を中断している|
+|9|Interrupted|JOBに異常が発生し、再割当可否を判定中である|
 |10|Pending|商品の再割当を待っている|
 |11|Aborted|再割当可能な商品が存在せず、JOBが成立しなくなった|
 
@@ -179,6 +179,80 @@
 |1|Stored|商品が棚に保管されている|
 |2|Reserved|商品がJOBに割り当てられて、作業開始を待っている|
 
+### ER図
 
+``` mermaid
+erDiagram
+    jobs {
+        CHAR(14) id PK
+        INT job_type_id FK
+        INT job_status_id FK
+        VARCHAR(10) device_id FK
+        VARCHAR(10) item_code FK
+        VARCHAR(20) item_id FK
+        VARCHAR(10) equipment_id FK
+        DATETIME created_at
+        DATETIME delivered_at
+        DATETIME initiated_at
+        DATETIME completed_at
+        DATETIME removed_at
+        DATETIME closed_at
+    }
+
+    items {
+        VARCHAR(20) id PK
+        VARCHAR(10) item_code FK
+        INT stock_status_id FK
+        VARCHAR(10) equipment_id FK
+        DATETIME created_at
+    }
+
+    equipments {
+        VARCHAR(10) id PK
+        INT equipment_status_id FK
+    }
+
+    devices {
+        VARCHAR(10) id PK
+    }
+
+    item_types {
+        VARCHAR(10) code PK
+        NVARCHAR(50) name
+    }
+
+    job_status {
+        INT id PK
+        NVARCHAR(15) name
+    }
+
+    job_types {
+        INT id PK
+        NVARCHAR(15) name
+    }
+
+    equipment_status {
+        INT id PK
+        NVARCHAR(15) name
+    }
+
+    stock_status {
+        INT id PK
+        NVARCHAR(15) name
+    }
+
+    job_types ||--o{ jobs : "defines"
+    job_status ||--o{ jobs : "defines"
+    devices ||--o{ jobs : "requests"
+    item_types ||--o{ jobs : "requested item type"
+    items ||--o{ jobs : "assigned item"
+    equipments ||--o{ jobs : "assigned equipment"
+
+    item_types ||--o{ items : "classifies"
+    stock_status ||--o{ items : "defines"
+    equipments ||--o{ items : "stores"
+
+    equipment_status ||--o{ equipments : "defines"
+```
 
 
