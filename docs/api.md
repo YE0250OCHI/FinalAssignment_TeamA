@@ -317,6 +317,13 @@ POST /api/v1/picking-orders/{id}/cancel
 }
 ```
 
+JOBの発行元と、キャンセル送信者が異なる
+``` json
+{
+  "error" : "ACCESS_DENIED_JOB"
+}
+```
+
 #### 404 Not Found
 
 指定されたJOBが存在しない（idが間違っている）
