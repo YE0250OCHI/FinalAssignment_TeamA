@@ -230,7 +230,6 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-48",
       "itemCode" : "I02",
       "itemName" : "部品B",
-      "equipmentId" : "AS02",
       "status" : "Aborted",
       "closedAt" : "2026-06-16T17:01:00"
     },
@@ -238,7 +237,6 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-51",
       "itemCode" : "I01",
       "itemName" : "部品A",
-      "equipmentId" : "AS01",
       "status" : "Canceled",
       "closedAt" : "2026-06-16T16:58:00"
     },
@@ -246,7 +244,6 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
       "jobId" : "J20260616-44",
       "itemCode" : "I01",
       "itemName" : "部品A",
-      "equipmentId" : "AS01",
       "status" : "Completed",
       "closedAt" : "2026-06-16T16:55:00"
     }
@@ -341,7 +338,7 @@ GET /api/v1/items
 
 ### 200 OK
 
-商品マスタに登録されている商品の在庫状況
+取得成功：商品マスタに登録されている商品の在庫状況
 ``` json
 [
   {
@@ -402,7 +399,7 @@ GET /api/v1/items/available
 
 ### 200 OK
 
-現在出庫可能な商品の一覧（在庫あり品のみ）
+取得成功：現在出庫可能な商品の一覧（在庫あり品のみ）
 ``` json
 [
   {
@@ -426,9 +423,14 @@ GET /api/v1/items/available
 ]
 ```
 
+取得成功：出庫可能な商品が存在しない場合
+``` json
+[]
+```
+
 **補足**
 - stockCount：総在庫数（物理的に保管されている在庫数）
-- availableCount：出庫可能な個数（JOBに予約分を除いた個数）
+- availableCount：出庫可能な個数（JOB予約分を除いた個数）
 
 #### 403 Forbidden
 
@@ -455,16 +457,31 @@ POST /api/v1/racks/online
   "equipmentId" : "AS01",
   "availableCapacity" : 47,
   "stocks" : [
-    { "itemId" : "I01-260616-001" },
-    { "itemId" : "I01-260616-021" },
-    { "itemId" : "I01-260616-043" }
+    {
+      "itemId" : "I01-260616-001"
+    },
+    {
+      "itemId" : "I01-260616-021"
+    },
+    {
+      "itemId" : "I01-260616-043"
+    }
   ]
+}
+```
+
+在庫なしの場合
+``` json
+{
+  "equipmentId" : "AS01",
+  "availableCapacity" : 50,
+  "stocks" : []
 }
 ```
 
 ### レスポンス
 
-
+### 200 OK
 
 
 
