@@ -179,7 +179,7 @@
 |1|Stored|商品が棚に保管されている|
 |2|Reserved|商品がJOBに割り当てられて、作業開始を待っている|
 
-### ER図
+## ER図
 
 ``` mermaid
 erDiagram
@@ -241,18 +241,54 @@ erDiagram
         NVARCHAR(15) name
     }
 
-    job_types ||--o{ jobs : "defines"
-    job_status ||--o{ jobs : "defines"
-    devices ||--o{ jobs : "requests"
-    item_types ||--o{ jobs : "requested item type"
-    items ||--o{ jobs : "assigned item"
-    equipments ||--o{ jobs : "assigned equipment"
+    job_types ||--o{ jobs : "JOB種別は？"
+    job_status ||--o{ jobs : "JOB状態は？"
+    devices ||--o{ jobs : "依頼元は誰？"
+    item_types ||--o{ jobs : "要求されている商品の品種は？"
+    items ||--o{ jobs : "割り当てられた商品は？"
+    equipments ||--o{ jobs : "割り当てられた自動倉庫は？"
 
-    item_types ||--o{ items : "classifies"
-    stock_status ||--o{ items : "defines"
-    equipments ||--o{ items : "stores"
+    item_types ||--o{ items : "商品の品種は？"
+    stock_status ||--o{ items : "商品の保管状態は？"
+    equipments ||--o{ items : "どの自動倉庫に保管されているか？"
 
-    equipment_status ||--o{ equipments : "defines"
+    equipment_status ||--o{ equipments : "装置の状態は？"
 ```
+
+## データ操作方針
+
+### CRUD対応表
+
+|処理|jobs|items|equipments|備考|
+|:---|:---:|:---:|:---:|:---|
+|出庫JOB登録|C|R|-|在庫有無を確認してJOBを作成する|
+|出庫JOB割当|U|R/U|R/U|保管中商品を選定し、予約中へ変更する|
+|出庫JOB配信|U|-|-|delivered_atを設定する|
+|出庫作業開始報告|U|D|U|itemsから商品を削除し、設備をBusyへ変更する|
+|出庫搬送完了報告|U|-|U|WaitOutへ遷移する|
+|商品取出し報告|U|-|U|JOB完了、設備をAvailableへ戻す|
+|出庫JOBキャンセル|U|U|-|予約済み商品があれば保管中へ戻す|
+|入庫JOB登録|C|-|R/U|入庫JOBを作成し、設備をBusyへ変更する|
+|入庫作業開始報告|U|-|-|Putawayへ遷移する|
+|入庫完了報告|U|C|U|itemsへ商品を登録し、JOB完了、設備をAvailableへ戻す|
+|自動倉庫オンライン要求|-|-|U|設備をAvailableへ変更する|
+|自動倉庫エラー報告|U|U/D|U|JOB状態・在庫・設備状態を更新する|
+|タイムアウト監視|R/U|R/U/D|R/U|状態に応じて再割当・異常終了・ロスト処理を行う|
+|商品在庫一覧取得|-|R|-|品種別在庫数を取得する|
+|未完了JOB一覧取得|R|-|-|closed_atISNULLのJOBを取得する|
+|JOB履歴取得|R|-|-|closed_atISNOTNULLのJOBを取得する|
+
+**記号の意味**
+C : 作成
+R : 参照
+U : 更新
+D : 削除
+
+### 採番ルール
+
+
+### データの保持と削除
+
+
 
 
