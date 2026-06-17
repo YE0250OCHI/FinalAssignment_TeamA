@@ -290,6 +290,8 @@ GET /api/v1/picking-orders/history?sort=latest&from=2026-06-16&to=2026-06-16
 POST /api/v1/picking-orders/{id}/cancel
 ```
 
+id : JOB番号（例：J20260616-01）
+
 ### レスポンス
 
 #### 204 No Content
@@ -578,6 +580,8 @@ POST /api/v1/racks/job
 POST /api/v1/racks/job/{id}/initiate
 ```
 
+id : JOB番号（例：J20260616-01）
+
 ### レスポンス
 
 #### 204 No Content
@@ -628,6 +632,8 @@ JOBの発行元と、キャンセル送信者が異なる
 ``` http
 POST /api/v1/racks/job/{id}/complete
 ```
+
+id : JOB番号（例：J20260616-01）
 
 ### レスポンス
 
