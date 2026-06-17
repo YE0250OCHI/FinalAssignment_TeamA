@@ -115,7 +115,7 @@ JOB完了
 
 ## 状態定義・遷移
 
-<img width="2834" height="4556" alt="image" src="https://github.com/user-attachments/assets/1fdac2ff-88cb-4efb-812f-40c96c569399" />
+<img width="2834" height="4557" alt="image" src="https://github.com/user-attachments/assets/604def4b-8ee5-4528-93e8-0e6ea54ad3a0" />
 
 **補足**
 - 異常終了のエビデンスは、「対象品種の在庫の有無」
@@ -292,12 +292,16 @@ JOB完了
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|-|FK|装置ID|
+|device_id|INT|○|-|スマホID|
 |created_at|DATETIME|-|-|作成日時|
 |delivered_at|DATETIME|-|-|JOB配信日時|
 |initiated_at|DATETIME|-|-|作業開始日時|
 |completed_at|DATETIME|-|-|搬送完了日時|
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
 |closed_at|DATETIME|-|-|終了日時|
+
+※スマホIDは、IPアドレスの解決にのみ使用する
+　→　マスターデータは、DBに登録しない
 
 ### items：商品在庫状態
 
