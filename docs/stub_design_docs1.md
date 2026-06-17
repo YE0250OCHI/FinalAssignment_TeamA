@@ -14,20 +14,22 @@
 ### オフライン
 
 - 起動直後および異常発生時に移行
-- サーバーへオンライン化報告を実行
-- 棚IDと在庫情報（商品番号：品種ID-入庫日-枝番）、空き容量を送信
-
-<img width="596" height="382" alt="image" src="https://github.com/user-attachments/assets/d9e12777-30db-4d9b-a374-fb5cd769350b" />
+- サーバーへオンライン要求を送信
+  - 在庫情報（商品番号：品種ID-入庫日-枝番）・空き容量
+- オンライン要求のレスポンスでJOB情報を受け取った場合、出庫バッファに格納
+ 
+<img width="1141" height="571" alt="image" src="https://github.com/user-attachments/assets/42c20086-64ff-45e7-9387-1920e4251212" />
 
 ### 待機状態
 
 - 入庫操作待機 (コンソール入力)
-- サーバーからの出庫リクエストを待機
-- 5秒毎にサーバーへ出庫指示問合せ (GET送信)
+- サーバーからの出庫要求を待機
+- 5秒毎にサーバーへ出庫指示問合せ (Pull送信)
   - 入庫・出庫は同時に動作可能
-  - 出庫のPOSTとGETはどちらかが動作中はもう片方は無効
+  - 出庫要求と問合せのレスポンスが同時に来た場合、片方のみ有効
+  - 出庫動作中はPull送信を停止
  
-<img width="861" height="356" alt="image" src="https://github.com/user-attachments/assets/edf5f345-5b13-4487-98c1-7b210fc56be9" />
+<img width="1242" height="432" alt="image" src="https://github.com/user-attachments/assets/8e48378d-535d-4f62-839d-1378aea2336b" />
  
 #### 入庫指示の受付
 
@@ -37,7 +39,7 @@
 - サーバーレスポンスでJOB情報 (JOB番号・商品個別ID) を受信
 - 入庫バッファに受け取ったJOB情報を格納
 
-<img width="605" height="511" alt="image" src="https://github.com/user-attachments/assets/af579803-9c57-452d-a5c0-66e2aba4cef5" />
+<img width="773" height="671" alt="image" src="https://github.com/user-attachments/assets/179b1343-9e38-48cc-bf5b-d53a249b36c5" />
 
 #### 出庫指示の受付
 
@@ -47,49 +49,52 @@
 - リクエスト受信時出庫動作中であればエラーレスポンスを送信
 - JOB番号を確認し重複があればエラーレスポンスを送信
 - 対象の商品個別IDがなければエラーレスポンスを送信
-- 出庫バッファに受け取ったリクエストを格納
+- 出庫バッファに受け取ったJOB情報を格納
 
 出庫指示問合せへのレスポンス
 
 - 出庫動作を行っていない場合5秒毎に問合せを送信
 - 200レスポンス(JOB番号・商品個別ID)を受信した場合
-  - JOB番号を確認し重複があればエラーレスポンスを送信
-  - 対象の商品個別IDがなければエラーレスポンスを送信
-  - 出庫バッファに受け取ったリクエストを格納
+  - JOB番号を確認し重複があれば出庫指示を無視
+  - 対象の商品個別IDがなければ出庫指示を無視
+  - 出庫バッファに受け取ったJOB情報を格納
+  - 5秒待機
 - 204レスポンスを受信した場合
   - 処理は行わず5秒待機へ
 
-<img width="1047" height="557" alt="image" src="https://github.com/user-attachments/assets/113ffc0b-58df-49d9-9368-4399a5ca6d7b" />
+<img width="1317" height="710" alt="image" src="https://github.com/user-attachments/assets/55ec32b0-e485-41c7-8695-b61c4ba11f1f" />
 
 ### 動作状態
 
 #### 入庫動作
 
-- 入庫開始フラグを送信
+- 入庫JOB開始通知を送信
 - コンソールに出庫指示の内容を表示
 - 入庫動作の完了を待機 (今回はコンソール入力で代用)
-- 入庫完了フラグを送信
+- 入庫JOB完了通知を送信
 - 待機状態へ移行
 
-<img width="392" height="522" alt="image" src="https://github.com/user-attachments/assets/ed3c1fac-2e4d-4ee4-b9dc-2d97d39d7c88" />
+<img width="463" height="607" alt="image" src="https://github.com/user-attachments/assets/64d509e7-9cbc-4f5a-a993-0808859ec007" />
 
 #### 出庫動作
 
-- 出庫開始フラグを送信
+- 出庫JOB開始通知を送信
 - コンソールに出庫指示の内容を表示
 - 出庫動作の完了を待機 (今回はコンソール入力で代用)
-- 出庫完了フラグを送信
+- 出庫JOB完了通知を送信
 - ワーク取出の完了を待機 (今回はコンソール入力で代用)
-- 取出完了フラグを送信
+- 商品取出通知を送信
 - 待機状態へ移行
 
-<img width="731" height="482" alt="image" src="https://github.com/user-attachments/assets/fa32309c-a8dd-47cc-bdfc-9bad865f5e0d" />
+<img width="1097" height="633" alt="image" src="https://github.com/user-attachments/assets/d4770a28-c655-476b-9530-e8afbbe862bb" />
 
 ### 異常状態
 
-- コンソールから非常停止入力で移行
-- 進行中の作業をすべて異常終了し、サーバーへエラーを送信
-- コンソール入力でオンライン化報告から復帰する
+- コンソールからの非常停止入力や通信異常発生時に移行
+- 進行中の作業をすべて異常終了し、サーバーへアラーム報告を送信
+- コンソール入力でオンライン要求から復帰する
+
+<img width="607" height="547" alt="image" src="https://github.com/user-attachments/assets/c1013c87-6c09-42df-9590-0e708187c5f0" />
 
 ## DB定義
 
