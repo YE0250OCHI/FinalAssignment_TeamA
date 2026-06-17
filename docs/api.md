@@ -685,6 +685,8 @@ JOBの発行元と、キャンセル送信者が異なる
 POST /api/v1/racks/job/{id}/remove
 ```
 
+id : JOB番号（例：J20260616-01）
+
 ### レスポンス
 
 #### 204 No Content
