@@ -241,31 +241,31 @@
 |PickingTask|||出庫処理のタスク|
 |StoringTask|||入庫処理のタスク|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
-||GetInventory()|Task<List<Inventory>> ||
-||SearchInventory()|Task<int>||
-||UpdateInventory()|Task||
-||RemoveInventory()|Task||
+||GetInventory()|`Task<List<Inventory>>`||
+||SearchInventory()|`Task<int>`|| 
+||UpdateInventory()|`Task`||
+||RemoveInventory()|`Task`||
 |SqlRepository|||在庫データ取得・更新|
-||GetInventory|Task<List<Inventory>> |在庫一覧を取得する|
-||SearchInventory|Task<int>|在庫確認を行う|
-||RemoveInventory|Task|在庫テーブルへ出庫操作を行う|
-||UpdateInventory|Task|在庫テーブルへ入庫操作を行う|
+||GetInventory|`Task<List<Inventory>>`|在庫一覧を取得する|
+||SearchInventory|`Task<int>`|在庫確認を行う|
+||RemoveInventory|`Task`|在庫テーブルへ出庫操作を行う|
+||UpdateInventory|`Task`|在庫テーブルへ入庫操作を行う|
 |OnlineBody|||オンライン通知要求用のレコード|
-||AvailableCapacity|int|空き容量|
-||Stocks|List<Inventory>|在庫テーブル内の商品個別ID|
+||AvailableCapacity|`int`|空き容量|
+||Stocks|`List<Inventory>`|在庫テーブル内の商品個別ID|
 |PutAwayBody|||入庫要求用のレコード|
-||ItemCode|string|品種番号|
+||ItemCode|`string`|品種番号|
 |JobBody|||JOB情報受け取り用のレコード|
-||JobId|string|JOB番号|
-||JobType|string|入出庫方向|
-||ItemId|string|商品個別ID|
+||JobId|`string`|JOB番号|
+||JobType|`string`|入出庫方向|
+||ItemId|`string`|商品個別ID|
 |AlarmBody|||異常報告用のレコード|
-||AlarmCode|string|アラームの内容|
-||OccurredAt|DateTime|発生日時|
+||AlarmCode|`string`|アラームの内容|
+||OccurredAt|`DateTime`|発生日時|
 |ErrorBody|||エラーメッセージ用のレコード|
-||Error|string|API通信のエラーメッセージ|
+||Error|`string`|API通信のエラーメッセージ|
 |Inventory|||在庫情報の格納|
-||ItemId|string|商品個別ID|
+||ItemId|`string`|商品個別ID|
 
 Program
 - HttpCrient生成
