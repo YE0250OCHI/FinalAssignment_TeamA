@@ -18,6 +18,7 @@
 |initiated_at|DATETIME|-|-|作業開始日時|
 |completed_at|DATETIME|-|-|搬送完了日時|
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
+|suspended_at|DATETIME|-|-|処理中断された日時|
 |closed_at|DATETIME|-|-|終了日時|
 
 - JOBの詳細、状態を表すテーブル
