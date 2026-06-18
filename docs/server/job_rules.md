@@ -124,12 +124,9 @@
 - 自動倉庫がJOBを持っていることを確認して処理を終了する　-> ロールバックを実行
 - 「JOBなし」を返す（またはプッシュを行わない）
 
-## JOBの進捗と在庫、自動倉庫の状態
+## JOBの状態遷移
 
-- JOBは進捗状態をもつ
-- 自動倉庫、商品在庫は、JOBの進捗に応じて変化する
-
-<img width="2531" height="2904" alt="image" src="https://github.com/user-attachments/assets/d5b854dd-6eda-4997-9dc0-0f07267818b6" />
+<img width="2699" height="2838" alt="image" src="https://github.com/user-attachments/assets/51d58a39-3fb8-4d8d-8cb6-89183958a9dc" />
 
 ## タイムアウト
 
