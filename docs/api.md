@@ -182,20 +182,9 @@ POST /api/v1/racks/online
 
 ### レスポンス
 
-### 200 OK
-
-オンライン受理：適用可能なJOBがあったときは、JOBを返却
-``` json
-{
-  "jobId" : "J20260616-44",
-  "jobType" : "PICKING",
-  "itemId" : "I01-260616-023"
-}
-```
-
 ### 204 No Content
 
-オンライン受理：適用可能なJOBないとき
+オンライン受理
 ``` json
 なし
 ```
