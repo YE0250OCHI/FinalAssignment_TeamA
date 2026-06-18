@@ -162,14 +162,13 @@
 |:---|:---|:------|
 |1|Unassigned|JOBが作成されたが、商品が割当られていない|
 |2|Assigned|JOBに商品を割り当て、自動倉庫に指示を出した|
-|4|Picking|自動倉庫が出庫を始めた|
-|5|WaitOut|出庫が完了したが、商品が取り出されていない|
-|6|Putaway|自動倉庫が入庫を始めた|
-|7|Completed|JOBが完了した|
-|8|Canceled|JOBがキャンセルされた|
-|9|Interrupted|JOBに異常が発生し、再割当可否を判定中である|
-|10|Pending|商品の再割当を待っている|
-|11|Aborted|再割当可能な商品が存在せず、JOBが成立しなくなった|
+|3|Picking|自動倉庫が出庫を始めた|
+|4|WaitOut|出庫が完了したが、商品が取り出されていない|
+|5|Putaway|自動倉庫が入庫を始めた|
+|6|Completed|JOBが完了した|
+|7|Canceled|JOBがキャンセルされた|
+|8|Recovering|商品の再割当を待っている|
+|9|Aborted|再割当可能な商品が存在せず、JOBが成立しなくなった|
 
 ### job_types : JOB種別マスタ
 
