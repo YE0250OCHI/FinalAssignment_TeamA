@@ -11,6 +11,8 @@
 |5.|出庫処理|常時監視|出庫バッファ内のJOBを実行する|
 |6.|入庫処理|常時監視|入庫バッファ内のJOBを実行する|
 
+<img width="1368" height="726" alt="image" src="https://github.com/user-attachments/assets/698db184-57ed-4e5d-bb59-292d6e523320" />
+
 ## フロー処理
 
 ### アプリケーション起動
