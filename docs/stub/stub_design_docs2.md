@@ -240,8 +240,6 @@
 |WaitStoringReq|||入庫要求待機のタスク|
 |PickingTask|||出庫処理のタスク|
 |StoringTask|||入庫処理のタスク|
-|PickingJob|||出庫処理バッファ|
-|StoringJob|||入庫処理バッファ|
 |ApiResponseHandler|||APIレスポンス処理|
 |MockMachineInput|||模擬動作完了|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
@@ -270,6 +268,18 @@
 ||Error|`string`|API通信のエラーメッセージ|
 |Inventory|||在庫情報の格納|
 ||ItemId|`string`|商品個別ID|
+|PickingJob|||出庫処理バッファ|
+||JobId|`string`|JOB番号|
+||JobType|`string`|入出庫方向|
+||ItemId|`string`|商品個別ID|
+|StoringJob|||入庫処理バッファ|
+||JobId|`string`|JOB番号|
+||JobType|`string`|入出庫方向|
+||ItemId|`string`|商品個別ID|
+|SystemState|||状態フラグ|
+||IsPicking|`bool`|出庫処理状態|
+||IsStoring|`bool`|入庫処理状態|
+||Emergency|`int`|異常状態|
 
 Program
 - HttpCrient生成
@@ -323,6 +333,11 @@ Models
   - JobId
   - JobType
   - ItemId
+- SystemState
+  - IsPicking
+  - IsStoring
+  - Emergency
+
 
 ## エラー処理
 
