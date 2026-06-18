@@ -14,7 +14,7 @@
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
 |equipment_id|VARCHAR(10)|-|FK|装置ID|
 |created_at|DATETIME|○|-|作成日時|
-|delivered_at|DATETIME|-|-|JOB配信日時|
+|assigned_at|DATETIME|-|-|JOB割当日時（配信日時）|
 |initiated_at|DATETIME|-|-|作業開始日時|
 |completed_at|DATETIME|-|-|搬送完了日時|
 |removed_at|DATETIME|-|-|商品取出し日時（出庫のみ）|
