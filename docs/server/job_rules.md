@@ -109,7 +109,7 @@
 2. 配信相手の自動倉庫が、JOBを持っていないか確認する
 3. 未割当JOBのうち、最も登録の古いJOBを取得する
 4. JOBを割当済みに更新する
-5. 商品を予約中に更新する
+5. 商品をReservedに更新する
 6. 自動倉庫に、実行中JOBを設定する
 7. コミット
 
@@ -126,20 +126,132 @@
 
 ## JOBの状態遷移
 
-<img width="2699" height="2838" alt="image" src="https://github.com/user-attachments/assets/51d58a39-3fb8-4d8d-8cb6-89183958a9dc" />
+### 出庫JOB
+
+``` mermaid
+stateDiagram-v2
+
+[*] --> Unassigned : 出庫依頼
+
+Unassigned --> Assigned : 商品割当
+
+Assigned --> Picking : initiated
+Assigned --> Recovering : 異常
+
+Picking --> WaitOut : completed
+Picking --> Recovering : 異常
+
+WaitOut --> Completed : removed
+WaitOut --> Recovering : 異常
+
+Recovering --> Assigned : 商品再割当
+
+Unassigned --> Aborted : 復旧不可
+Recovering --> Aborted : 復旧不可
+
+Unassigned --> Canceled : キャンセルされた
+Recovering --> Canceled : キャンセルされた
+Assigned --> Canceled : キャンセルされた
+
+Canceled --> [*]
+Completed --> [*]
+Aborted --> [*]
+```
+
+### 入庫JOB
+
+``` mermaid
+stateDiagram-v2
+
+[*] --> Assigned : 入庫依頼
+
+Assigned --> Putaway : initiated
+
+Putaway --> Completed : removed
+
+Assigned --> Aborted : 異常
+Putaway --> Aborted : 異常
+
+Completed --> [*]
+Aborted --> [*]
+```
+
+### サーバー再起動時
+
+``` mermaid
+stateDiagram-v2
+
+[*] --> Unassigned : 再起動
+[*] --> Assigned : 再起動
+[*] --> Picking : 再起動
+[*] --> WaitOut : 再起動
+[*] --> Recovering : 再起動
+[*] --> Putaway : 再起動
+
+[*] --> Completed : 再起動
+[*] --> Aborted : 再起動
+[*] --> Canceled : 再起動
+
+Unassigned --> Aborted: 初期化
+Assigned --> Aborted: 初期化
+Picking --> Aborted: 初期化
+WaitOut --> Aborted: 初期化
+Recovering --> Aborted: 初期化
+Putaway --> Aborted: 初期化
+
+Completed --> [*]
+Aborted --> [*]
+Canceled --> [*]
+```
 
 ## タイムアウト
 
 - JOBは、以下の状態のとき、時限をもつ
+  - Unassigned：出庫のみ、JOBが作成されたが、商品が割り当てられていない
   - Assigned：JOBに商品が割り当てられて、自動倉庫に配信した
-  - Picking、Putaway：自動倉庫が入出庫作業を開始した
+  - Picking：自動倉庫が出庫作業を開始した
   - WaitOut：出庫のみ、出庫動作が完了し人搬送を待っている
+  - Putaway：自動倉庫が入庫作業を開始した
 - サーバーは、定時間ごとに上記状態にあるJOBの経過時間を確認し、超過を確認したJOBを異常とみなす
-  - JOBは処理を中断したものとみなし、[再割当ロジック](再割当ロジック)を実行する
-  - 商品は、JOBの進捗に応じて挙動を変える
-    - JOBがAssignedのとき：商品はReserved->Storedに変更する
-    - それ以外のとき：商品は管理対象外、在庫情報が削除されているので何もしない
-  - 自動倉庫は、即時オフライン扱いとする
 
+## 異常発生時
 
+商品の搬送中に異常が発生したときは、JOBを存続させるために、商品を再割当を行う。
+
+### 異常の定義
+
+- タイムアウト : 規定時間内に状態が遷移しなかった
+- アラーム報告 : JOBを配信した装置からアラーム報告があった
+- オンライン要求 : JOBを配信した装置からオンライン報告があった -> アラーム報告なしで再起動したとみなす
+
+### 再割当ロジック
+
+JOBの中断
+1. （作業中の異常発生）
+2. トランザクション開始
+3. JOB状態ごとの商品の扱いを踏襲し、商品の在庫状態を変更する
+4. 対象自動倉庫をオフラインにする
+5. JOBの商品ID、装置IDをNULLに変え、JOB状態をRecoveringに変える
+6. コミット
+
+JOBの復旧
+1. （上記処理のあと続いて実行）
+2. トランザクション開始
+3. 同一品種の在庫を、在庫情報から検索する
+4. 割当可能は商品があれば
+    - 商品をReservedにする
+    - JOB.item_id / equipment_id を設定する
+    - JOB状態を Assigned にする
+5. 割当可能は商品がなければ
+    - 在庫情報がない -> Aborted
+    - 在庫はあるが、現在作業ができない -> Recoveringのまま
+6. コミット
+
+JOBの配信
+1. AssignedのJOBをプッシュ配信する
+
+### 異常時の商品の取り扱い
+
+- Assigned以前の中断 → 商品を保管中に戻す
+- Picking以降の中断 → 商品を在庫から除外/削除する
 
