@@ -23,7 +23,7 @@
 - JOBの詳細、状態を表すテーブル
 - equipment_id は商品の割当を行うまでは NULL 状態となる
 - item_id は出庫JOBでは商品の割当時、入庫JOBではJOB作成時に設定する
-- delivered_at～removed_atは、状態遷移日時を表す
+- assigned_at～removed_atは、状態遷移日時を表す
   - タイムアウト監視に利用する
   - 再割当等により状態が戻る場合はNULLに戻す
 - closed_at が設定されたJOBは履歴扱いとする
