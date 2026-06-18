@@ -240,16 +240,20 @@
 |WaitStoringReq|||入庫要求待機のタスク|
 |PickingTask|||出庫処理のタスク|
 |StoringTask|||入庫処理のタスク|
+|PickingJob|||出庫処理バッファ|
+|StoringJob|||入庫処理バッファ|
+|ApiResponseHandler|||APIレスポンス処理|
+|MockMachineInput|||模擬動作完了|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
 ||GetInventory()|`Task<List<Inventory>>`||
-||SearchInventory()|`Task<int>`|| 
-||UpdateInventory()|`Task`||
-||RemoveInventory()|`Task`||
+||SearchInventory(string itemId)|`Task<int>`|| 
+||UpdateInventory(string itemId)|`Task`||
+||RemoveInventory(string itemId)|`Task`||
 |SqlRepository|||在庫データ取得・更新|
 ||GetInventory|`Task<List<Inventory>>`|在庫一覧を取得する|
-||SearchInventory|`Task<int>`|在庫確認を行う|
-||RemoveInventory|`Task`|在庫テーブルへ出庫操作を行う|
-||UpdateInventory|`Task`|在庫テーブルへ入庫操作を行う|
+||SearchInventory(string itemId)|`Task<int>`|在庫確認を行う|
+||RemoveInventory(string itemId)|`Task`|在庫テーブルへ出庫操作を行う|
+||UpdateInventory(string itemId)|`Task`|在庫テーブルへ入庫操作を行う|
 |OnlineBody|||オンライン通知要求用のレコード|
 ||AvailableCapacity|`int`|空き容量|
 ||Stocks|`List<Inventory>`|在庫テーブル内の商品個別ID|
@@ -279,6 +283,8 @@ Task
 - WaitStoringReq
 - PickingTask
 - StoringTask
+- ApiResponseHandler
+- MockMachineInput
 
 Repositories
 - ISqlRepository
@@ -308,6 +314,14 @@ Models
 - ErrorBody
   - Error
 - Inventory
+  - ItemId
+- PickingJob
+  - JobId
+  - JobType
+  - ItemId
+- StoringJob
+  - JobId
+  - JobType
   - ItemId
 
 ## エラー処理
