@@ -51,10 +51,8 @@
                1. 終了ログ記録
                2. プログラム終了
        2. 復帰不可異常
-          - キー入力待機
-            - 確認入力
-              1. 終了ログ記録
-              2. プログラム終了
+          1. 終了ログ記録
+          2. プログラム終了
 
 ### 出庫要求待機
 
@@ -312,6 +310,7 @@ Models
 - Inventory
   - ItemId
 
+## エラー処理
 
-
+<img width="1687" height="425" alt="image" src="https://github.com/user-attachments/assets/5f305b7d-c258-452e-8147-204455586da4" />
 
