@@ -240,7 +240,7 @@
 |WaitStoringReq|||入庫要求待機のタスク|
 |PickingTask|||出庫処理のタスク|
 |StoringTask|||入庫処理のタスク|
-|ApiResponseHandler|||APIレスポンス処理|
+|ApiResponceChecker|||APIレスポンス判定|
 |MockMachineInput|||模擬動作完了|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
 ||GetInventory()|`Task<List<Inventory>>`||
@@ -293,7 +293,7 @@ Task
 - WaitStoringReq
 - PickingTask
 - StoringTask
-- ApiResponseHandler
+- ApiResponceChecker
 - MockMachineInput
 
 Repositories
