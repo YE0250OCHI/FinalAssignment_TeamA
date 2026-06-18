@@ -11,7 +11,7 @@
 |JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|○|-|○|○|-|
 |取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|-|
 |入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|-|
-|アラーム報告|自動倉庫|POST|/api/v1/racks/alarmed|-|○|-|-|○|○|-|-|
+|アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|○|-|-|
 
 ☆・・・ボディ有無の両方が存在
 
@@ -479,7 +479,7 @@ POST /api/v1/racks/putaway-order
 ### リクエスト
 
 ``` http
-POST /api/v1/racks/alarmed
+POST /api/v1/racks/alarms
 ```
 
 アラーム詳細（エラーの内容のこと）
