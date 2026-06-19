@@ -526,6 +526,17 @@ POST /api/v1/racks/alarms
 }
 ```
 
+## その他汎用エラー
+
+#### 500 Internal Server Error
+
+その他の予期しないエラー
+``` json
+{
+  "error" : "UNEXPECTED_ERROR"
+}
+```
+
 ***
 
 ## 次出庫JOB送信　　
@@ -567,11 +578,6 @@ POST /api/v1/next-picking-order　　　
 
 拒否（対応不可）
 ``` json
-{
-  "error" : "CANNOT_DISPATCH"
-}
+なし
 ```
-
-
-
 
