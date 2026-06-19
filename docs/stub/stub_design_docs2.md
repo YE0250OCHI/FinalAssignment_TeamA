@@ -300,7 +300,7 @@ Program
 - Repository生成
 - メインループ開始
 
-Task
+Tasks
 - WaitPickingReq
 - PollingPicking
 - WaitStoringReq
