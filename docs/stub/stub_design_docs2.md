@@ -269,9 +269,9 @@
 ||~~GetAvailableCapacity()~~|~~`Task<int>`~~|~~空き容量を取得する~~|
 ||~~RemoveInventory(string itemId)~~|~~`Task`~~|~~在庫テーブルへ出庫操作を行う~~|
 ||~~UpdateInventory(string itemId)~~|~~`Task`~~|~~在庫テーブルへ入庫操作を行う~~|
-|OnlineBody|||オンライン通知要求用のレコード|
-||AvailableCapacity|`int`|空き容量|
-||Stocks|`List<Inventory>`|在庫テーブル内の商品個別ID|
+|~~OnlineBody~~|||~~オンライン通知要求用のレコード~~|
+||~~AvailableCapacity~~|~~`int`~~|~~空き容量~~|
+||~~Stocks~~|~~`List<Inventory>`~~|~~在庫テーブル内の商品個別ID~~|
 |PutAwayBody|||入庫要求用のレコード|
 ||ItemCode|`string`|品種番号|
 |JobBody|||JOB情報受け取り用のレコード|
@@ -283,8 +283,8 @@
 ||OccurredAt|`DateTime`|発生日時|
 |ErrorBody|||エラーメッセージ用のレコード|
 ||Error|`string`|API通信のエラーメッセージ|
-|Inventory|||在庫情報の格納|
-||ItemId|`string`|商品個別ID|
+|~~Inventory~~|||~~在庫情報の格納~~|
+||~~ItemId~~|~~`string`~~|~~商品個別ID~~|
 |~~PickingJob~~|||~~出庫処理バッファ~~|
 ||~~JobId~~|~~`string`~~|~~JOB番号~~|
 ||~~JobType~~|~~`string`~~|~~入出庫方向~~|
