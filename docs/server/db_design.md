@@ -86,10 +86,10 @@
 
 ### equipments：自動倉庫設備データ
 
-|id|equipment_status_id|備考|
-|:---|:---|:------|
-|AS01|1|初期オフライン|
-|AS02|1|初期オフライン|
+|id|equipment_status_id|picking_job_id|putaway_job_id|備考|
+|:---|:---|:---|:---|:---|
+|AS01|1|初期オフライン||||
+|AS02|1|初期オフライン||||
 
 ### item_types：品種マスタ
 
