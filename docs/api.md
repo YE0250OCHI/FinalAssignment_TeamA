@@ -31,7 +31,7 @@
 
 |作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|403|404|409|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|次出庫JOB送信　　|サーバー|POST|/api/v1/next-picking-order　　　|-|○|-|○|○|-|-|-|
+|次出庫JOB送信　　|サーバー|POST|/api/v1/next-picking-order　　　|-|○|-|-|○|-|-|○|
 
 **エラー対処（サーバー）**
 - 422：業務違反、JOBの再割当を実行
@@ -554,21 +554,21 @@ POST /api/v1/next-picking-order　　　
 なし
 ```
 
-#### 422 Unprocessable Content
-
-拒否（対応不可）
-``` json
-{
-  "error" : "CANNOT_DISPATCH"
-}
-```
-
 #### 400 Bad Request
 
 リクエスト形式が不正
 ``` json
 {
   "error" : "INVALID_REQUEST"
+}
+```
+
+#### 409 Conflict
+
+拒否（対応不可）
+``` json
+{
+  "error" : "CANNOT_DISPATCH"
 }
 ```
 
