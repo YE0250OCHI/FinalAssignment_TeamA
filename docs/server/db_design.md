@@ -50,6 +50,21 @@
 - 紐づく装置がオフラインになってもデータは保持するが、再オンライン化までは利用しない
 - 自動倉庫が再オンライン化した際は、当該装置の最新在庫情報を反映し、サーバー上の在庫情報を補正する
  
+### item_types：品種マスタ
+
+|カラム名|型|NOT NULL|キー|説明|
+|:---|:---|:---:|:---:|:---|
+|code|VARCHAR(10)|○|PK|品種番号|
+|name|NVARCHAR(50)|○|-|商品名|
+|current_sequence|INT|○|-|商品個別IDの現在連番|
+|sequence_updated_at|DATETIME|○|-|最終採番日時|
+
+- 商品の品種を管理するためのマスタ
+- 商品在庫状態の商品個別IDを、品種単位で分類するために利用する
+- 商品個別IDの採番情報を保持する
+- 商品IDの採番時に重複しないように、current_sequenceを参照する
+- 採番時に最終採番日が当日でない場合は連番を1から再開始する
+
 ### equipments：自動倉庫設備データ
 
 |カラム名|型|NOT NULL|キー|説明|
@@ -66,71 +81,6 @@
   - 各JOB ID は、該当するJOBが存在しない場合は NULL とする
   - JOBが完了、キャンセル、異常終了した場合は NULL に戻す
 
-### devices：スマートフォン端末マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|VARCHAR(10)|○|PK|スマホID|
-
-- 操作用端末のマスタ
-- JOBの依頼元端末を識別するために利用する
-- 操作用端末の状態は管理しない
-
-### item_types：品種マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|code|VARCHAR(10)|○|PK|品種番号|
-|name|NVARCHAR(50)|○|-|商品名|
-|current_sequence|INT|○|-|商品個別IDの現在連番|
-|sequence_updated_at|DATETIME|○|-|最終採番日時|
-
-- 商品の品種を管理するためのマスタ
-- 商品在庫状態の商品個別IDを、品種単位で分類するために利用する
-- 商品個別IDの採番情報を保持する
-- 商品IDの採番時に重複しないように、current_sequenceを参照する
-- 採番時に最終採番日が当日でない場合は連番を1から再開始する
-
-### job_statuses : JOB状態マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|INT|○|PK|状態キー|
-|name|NVARCHAR(15)|○|-|状態名|
-
-- JOB状態を表すマスタ
-- JOBの進捗状況を管理・識別するために利用する
-
-### job_types : JOB種別マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|INT|○|PK|状態キー|
-|name|NVARCHAR(15)|○|-|状態名|
-
-- JOB種別を表すマスタ
-- JOBの種別を管理・識別するために利用する
-
-### equipment_statuses : 自動倉庫設備状態マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|INT|○|PK|状態キー|
-|name|NVARCHAR(15)|○|-|状態名|
-
-- 自動倉庫設備の状態を表すマスタ
-- 自動倉庫設備の状態を管理・識別するために利用する
-
-### stock_statuses : 商品在庫状態マスタ
-
-|カラム名|型|NOT NULL|キー|説明|
-|:---|:---|:---:|:---:|:---|
-|id|INT|○|PK|状態キー|
-|name|NVARCHAR(15)|○|-|状態名|
-
-- 商品在庫の状態を表すマスタ
-- 商品在庫の状態を管理・識別するために利用する
-
 ## データ初期値
 
 ### equipments：自動倉庫設備データ
@@ -139,13 +89,6 @@
 |:---|:---|:------|
 |AS01|1|初期オフライン|
 |AS02|1|初期オフライン|
-
-### devices：スマートフォン端末マスタ
-
-|id|備考|
-|:---|:------|
-|SP01||
-|SP02||
 
 ### item_types：品種マスタ
 
@@ -159,41 +102,6 @@
 |I06|部品F|0|20000101T00:00:00|
 |I07|部品G|0|20000101T00:00:00|
 |I08|部品H|0|20000101T00:00:00|
-
-### job_status : JOB状態マスタ
-
-|id|name|
-|:---|:---|
-|1|Unassigned|
-|2|Assigned|
-|3|Picking|
-|4|WaitOut|
-|5|Putaway|
-|6|Completed|
-|7|Canceled|
-|8|Recovering|
-|9|Aborted|
-
-### job_types : JOB種別マスタ
-
-|id|name|備考|
-|:---|:---|:---|
-|1|Picking|出庫JOB|
-|2|Putaway|入庫JOB|
-
-### equipment_status : 自動倉庫設備状態マスタ
-
-|id|name|備考|
-|:---|:---|:------|
-|1|Offline|装置の生存が確認できない|
-|2|Online|装置は生存している|
-
-### stock_status : 商品在庫状態マスタ
-
-|id|name|備考|
-|:---|:---|:------|
-|1|Stored|商品が棚に保管されている|
-|2|Reserved|商品がJOBに割り当てられて、作業開始を待っている|
 
 ## ER図
 
@@ -230,10 +138,6 @@ erDiagram
         CHAR(14) putaway_job_id FK
     }
 
-    devices {
-        VARCHAR(10) id PK
-    }
-
     item_types {
         VARCHAR(10) code PK
         NVARCHAR(50) name
@@ -241,38 +145,13 @@ erDiagram
         DATETIME sequence_updated_at
     }
 
-    job_status {
-        INT id PK
-        NVARCHAR(15) name
-    }
-
-    job_types {
-        INT id PK
-        NVARCHAR(15) name
-    }
-
-    equipment_status {
-        INT id PK
-        NVARCHAR(15) name
-    }
-
-    stock_status {
-        INT id PK
-        NVARCHAR(15) name
-    }
-
-    jobs }o--|| job_types : "JOB種別"
-    jobs }o--|| job_status : "JOB状態"
-    jobs }o--|| devices : "依頼元端末"
     jobs }o--|| item_types : "要求品種"
     jobs }o--|| items : "割当商品"
     jobs }o--|| equipments : "割当設備"
 
     items }o--|| item_types : "品種"
-    items }o--|| stock_status : "在庫状態"
     items }o--|| equipments : "保管設備"
 
-    equipments }o--|| equipment_status : "設備状態"
     equipments |o--|| jobs : "割当中の出庫JOB"
     equipments |o--|| jobs : "割当中の入庫JOB"
 ```
