@@ -5,7 +5,7 @@
 |作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|403|404|409|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|
-|オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|-|-|○|○|-|○|
+|オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|-|-|-|○|-|-|
 |次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|○|-|○|
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|-|-|○|○|○|
 |JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|-|-|○|○|○|
@@ -155,31 +155,9 @@ POST /api/v1/racks/online
 
 #### リクエストボディ
 
-オンライン試行時の装置情報（装置ID、空き容量、在庫情報）
+オンライン要求
 ``` json
-{
-  "availableCapacity" : 47,
-  "stocks" : [
-    {
-      "itemId" : "I01-260616-001"
-    },
-    {
-      "itemId" : "I01-260616-021"
-    },
-    {
-      "itemId" : "I01-260616-043"
-    }
-  ]
-}
-```
-
-在庫なしの場合
-``` json
-{
-  "equipmentId" : "AS01",
-  "availableCapacity" : 50,
-  "stocks" : []
-}
+なし
 ```
 
 ### レスポンス
@@ -191,30 +169,12 @@ POST /api/v1/racks/online
 なし
 ```
 
-#### 400 Bad Request
-
-リクエスト形式が不正
-``` json
-{
-  "error" : "INVALID_REQUEST"
-}
-```
-
 #### 403 Forbidden
 
 未登録の端末からの要求
 ``` json
 {
   "error" : "UNREGISTERED_DEVICE"
-}
-```
-
-#### 409 Conflict
-
-在庫情報がおかしい（完了JOBに同一IDが存在する）
-``` json
-{
-  "error" : "DUPLICATE_STOCK"
 }
 ```
 
