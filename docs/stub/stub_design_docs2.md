@@ -235,13 +235,26 @@
 |クラス|メゾット|戻り値|説明|
 |:---|:---|:---|:---|
 |Program|||メインループ、HTTPクライアント設定、ロガー設定、SQLRepository設定|
+||Main|void|プログラム起動処理と各タスクの呼び出し|
+||Online|void|オンライン通知|
+||Alarm|void|異常処理|
 |WaitPickingReq|||出庫要求待機のタスク|
+||WaitPicking|void|出庫要求待機|
+||Unavailable|void|対応不可レスポンス処理|
 |PollingPicking|||出庫指示問合せのタスク|
+||Polling|void|出庫指示問合せ|
+||AddJob|void|出庫処理バッファへのデータ格納|
 |WaitStoringReq|||入庫要求待機のタスク|
+||WaitStoring|void|入庫要求待機|
 |PickingTask|||出庫処理のタスク|
+||Picking|void|出庫処理|
 |StoringTask|||入庫処理のタスク|
+||Storing|void|入庫処理|
 |ApiResponceHandler|||APIレスポンス判定|
-|MockMachineInput|||模擬動作完了|
+||Checker|bool|APIレスポンス判定|
+|ConsoleInput|||コンソール入力|
+||InputAction|bool|動作入力|
+||InputString|string?|文字入力|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
 ||GetInventory()|`Task<List<Inventory>>`||
 ||SearchInventory(string itemId)|`Task<int>`|| 
@@ -294,7 +307,7 @@ Task
 - PickingTask
 - StoringTask
 - ApiResponceHandler
-- MockMachineInput
+- ConsoleInput
 
 Repositories
 - ISqlRepository
