@@ -345,7 +345,7 @@ Models
   - ItemId
 - ~~PickingJob~~
   - ~~JobId~~
-  - JobType~~
+  - ~~JobType~~
   - ~~ItemId~~
 - ~~StoringJob~~
   - ~~JobId~~
