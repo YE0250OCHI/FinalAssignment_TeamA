@@ -311,6 +311,7 @@ Tasks
 - PickingTask
 - StoringTask
 - ApiResponceHandler
+- JobManager
 
 ConsoleInput
 
@@ -357,7 +358,6 @@ Models
   - IsPicking
   - IsStoring
   - Emergency
-
 
 ## エラー処理
 
