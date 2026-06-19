@@ -262,7 +262,7 @@
 ||RemoveInventory(string itemId)|`Task`||
 |SqlRepository|||在庫データ取得・更新|
 ||GetInventory|`Task<List<Inventory>>`|在庫一覧を取得する|
-||SearchInventory(string itemId)|`Task<int>`|在庫確認を行う|
+||SearchInventory(string? itemId)|`Task<int>`|在庫確認を行う|
 ||RemoveInventory(string itemId)|`Task`|在庫テーブルへ出庫操作を行う|
 ||UpdateInventory(string itemId)|`Task`|在庫テーブルへ入庫操作を行う|
 |OnlineBody|||オンライン通知要求用のレコード|
