@@ -6,10 +6,10 @@
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|-|-|○|○|-|○|
-|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|○|-|-|
-|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|○|-|○|○|-|
-|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|○|-|○|○|-|
-|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|-|
+|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|○|-|○|
+|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|-|-|○|○|○|
+|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|-|-|○|○|○|
+|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|-|-|○|○|○|
 |入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|○|
 |アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|○|-|-|
 
@@ -469,7 +469,14 @@ POST /api/v1/racks/putaway-order
 
 #### 409 Conflict
 
-状態不一致（空き容量、入庫JOBが実行中に送られた）
+空き容量がない
+``` json
+{
+  "error" : "NO_CAPACITY_AVAILABLE"
+}
+```
+
+状態不一致（入庫JOBが実行中に送られた）
 ``` json
 {
   "error" : "INVALID_STATUS"
