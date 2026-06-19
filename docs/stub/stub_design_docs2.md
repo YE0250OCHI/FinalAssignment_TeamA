@@ -251,18 +251,20 @@
 |StoringTask|||入庫処理のタスク|
 ||ExecuteAsync|`Task`|入庫処理|
 |ApiResponceHandler|||APIレスポンス判定|
-||CheckerAsync|`Task<bool>`|APIレスポンス判定|
+||CheckResponseAsync|`Task<bool>`|APIレスポンス判定|
 |ConsoleInput|||コンソール入力|
 ||InputActionAsync|`Task<bool>`|動作入力|
 ||InputStringAsync|`Task<string?>`|文字入力|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
 ||GetInventory()|`Task<List<Inventory>>`||
-||SearchInventory(string itemId)|`Task<int>`|| 
+||SearchInventory(string itemId)|`Task<bool>`||
+||GetAvailable()|`Task<int>`||
 ||UpdateInventory(string itemId)|`Task`||
 ||RemoveInventory(string itemId)|`Task`||
 |SqlRepository|||在庫データ取得・更新|
 ||GetInventory|`Task<List<Inventory>>`|在庫一覧を取得する|
-||SearchInventory(string? itemId)|`Task<int>`|在庫確認を行う|
+||SearchInventory(string itemId)|`Task<bool>`|在庫確認を行う|
+||GetAvailableCapacity()|`Task<int>`|空き容量を取得する|
 ||RemoveInventory(string itemId)|`Task`|在庫テーブルへ出庫操作を行う|
 ||UpdateInventory(string itemId)|`Task`|在庫テーブルへ入庫操作を行う|
 |OnlineBody|||オンライン通知要求用のレコード|
@@ -281,14 +283,14 @@
 ||Error|`string`|API通信のエラーメッセージ|
 |Inventory|||在庫情報の格納|
 ||ItemId|`string`|商品個別ID|
-|PickingJob|||出庫処理バッファ|
-||JobId|`string`|JOB番号|
-||JobType|`string`|入出庫方向|
-||ItemId|`string`|商品個別ID|
-|StoringJob|||入庫処理バッファ|
-||JobId|`string`|JOB番号|
-||JobType|`string`|入出庫方向|
-||ItemId|`string`|商品個別ID|
+|~~PickingJob~~|||~~出庫処理バッファ~~|
+||~~JobId~~|~~`string`~~|~~JOB番号~~|
+||~~JobType~~|~~`string`~~|~~入出庫方向~~|
+||~~ItemId~~|~~`string`~~|~~商品個別ID~~|
+|~~StoringJob~~|||~~入庫処理バッファ~~|
+||~~JobId~~|~~`string`~~|~~JOB番号~~|
+||~~JobType~~|~~`string`~~|~~入出庫方向~~|
+||~~ItemId~~|~~`string`~~|~~商品個別ID~~|
 |SystemState|||状態フラグ|
 ||IsPicking|`bool`|出庫処理状態|
 ||IsStoring|`bool`|入庫処理状態|
@@ -314,11 +316,13 @@ Repositories
 - ISqlRepository
   - GetInventory()
   - SearchInventory()
+  - GetAvailableCapacity()
   - RemoveInventory()
   - UpdateInventory()
 - SqlRepository
   - GetInventory
   - SearchInventory
+  - GetAvailable
   - RemoveInventory
   - UpdateInventory
 
@@ -339,14 +343,14 @@ Models
   - Error
 - Inventory
   - ItemId
-- PickingJob
-  - JobId
-  - JobType
-  - ItemId
-- StoringJob
-  - JobId
-  - JobType
-  - ItemId
+- ~~PickingJob~~
+  - ~~JobId~~
+  - JobType~~
+  - ~~ItemId~~
+- ~~StoringJob~~
+  - ~~JobId~~
+  - ~~JobType~~
+  - ~~ItemId~~
 - SystemState
   - IsPicking
   - IsStoring
