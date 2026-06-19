@@ -251,10 +251,10 @@
 |StoringTask|||入庫処理のタスク|
 ||ExecuteAsync|`Task`|入庫処理|
 |ApiResponceHandler|||APIレスポンス判定|
-||Checker|`bool`|APIレスポンス判定|
+||CheckerAsync|`Task<bool>`|APIレスポンス判定|
 |ConsoleInput|||コンソール入力|
-||InputAction|`bool`|動作入力|
-||InputString|`string?`|文字入力|
+||InputActionAsync|`Task<bool>`|動作入力|
+||InputStringAsync|`Task<string?>`|文字入力|
 |ISqlRepository|||在庫データアクセス用のインターフェース|
 ||GetInventory()|`Task<List<Inventory>>`||
 ||SearchInventory(string itemId)|`Task<int>`|| 
