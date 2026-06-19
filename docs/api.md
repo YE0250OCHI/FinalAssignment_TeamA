@@ -528,6 +528,8 @@ POST /api/v1/racks/alarms
 
 ## その他汎用エラー
 
+### サーバー -> スマホ・自動倉庫
+
 #### 500 Internal Server Error
 
 その他の予期しないエラー
