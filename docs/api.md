@@ -444,10 +444,10 @@ POST /api/v1/racks/putaway-order
 
 #### 422 Unprocessable Content
 
-商品IDが不正
+品種コードが不正
 ``` json
 {
-  "error" : "INVALID_PRODUCT_ID"
+  "error" : "INVALID_ITEM_CODE"
 }
 ```
 
@@ -580,8 +580,16 @@ POST /api/v1/next-picking-order　　　
 
 #### 409 Conflict
 
-拒否（対応不可）
+商品を在庫していない
 ``` json
-なし
+{
+  "error" : "OUT_OF_STOCK"
+}
 ```
 
+指令を受け付けられない
+``` json
+{
+  "error" : "CANNOT_DISPATCH"
+}
+```
