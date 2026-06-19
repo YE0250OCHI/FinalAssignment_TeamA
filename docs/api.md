@@ -10,7 +10,7 @@
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|○|-|○|○|-|
 |JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|○|-|○|○|-|
 |取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|-|
-|入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|-|
+|入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|○|
 |アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|○|-|-|
 
 ☆・・・ボディ有無の両方が存在
@@ -449,13 +449,6 @@ POST /api/v1/racks/putaway-order
 }
 ```
 
-空き容量がない
-``` json
-{
-  "error" : "OUT_OF_STOCK"
-}
-```
-
 #### 400 Bad Request
 
 リクエスト形式が不正
@@ -471,6 +464,15 @@ POST /api/v1/racks/putaway-order
 ``` json
 {
   "error" : "UNREGISTERED_DEVICE"
+}
+```
+
+#### 409 Conflict
+
+状態不一致（空き容量、入庫JOBが実行中に送られた）
+``` json
+{
+  "error" : "INVALID_STATUS"
 }
 ```
 
