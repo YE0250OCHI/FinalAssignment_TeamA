@@ -411,6 +411,13 @@ POST /api/v1/racks/putaway-order
 }
 ```
 
+棚の空き容量がない
+``` json
+{
+  "error" : "NO_CAPACITY_AVAILABLE"
+}
+```
+
 #### 400 Bad Request
 
 リクエスト形式が不正
@@ -430,13 +437,6 @@ POST /api/v1/racks/putaway-order
 ```
 
 #### 409 Conflict
-
-空き容量がない
-``` json
-{
-  "error" : "NO_CAPACITY_AVAILABLE"
-}
-```
 
 状態不一致（入庫JOBが実行中に送られた）
 ``` json
