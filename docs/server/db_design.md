@@ -71,6 +71,7 @@
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(10)|○|PK|設備ID|
 |status_id|INT|○|FK|オンライン状況|
+|available_capacity|INT|○|-|空き容量|
 |picking_job_id|CHAR(14)|-|FK|割り当てられた出庫JOB番号|
 |putaway_job_id|CHAR(14)|-|FK|割り当てられた入庫JOB番号|
 
