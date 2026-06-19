@@ -20,7 +20,7 @@
 1. アプリケーション起動
 2. HttpClient生成
 3. Logger生成
-4. Repository生成
+4. ~~Repository生成~~
 5. 起動ログ記録
 6. メインループ開始
 7. オンライン通知送信
@@ -75,16 +75,17 @@
          3. フローの先頭へ戻る
       2. 重複なし
          - フロー継続
-   4. 在庫確認
-      1. 在庫なし
-         1. 対応不可レスポンス送信
-         2. 通信ログ記録
-         3. フローの先頭へ戻る
-      2. 在庫あり
-         1. 対応可能レスポンス送信
-         2. 通信ログ記録
-         3. JOB情報を出庫バッファに保存
-5. フローの先頭へ戻る
+   4. ~~在庫確認~~
+      1. ~~在庫なし~~
+         1. ~~対応不可レスポンス送信~~
+         2. ~~通信ログ記録~~
+         3. ~~フローの先頭へ戻る~~
+      2. ~~在庫あり~~
+         - ~~フロー継続~~
+5. 対応可能レスポンス送信
+6. 通信ログ記録
+7. JOB情報を出庫バッファに保存
+8. フローの先頭へ戻る
 
 ### 出庫指示問合せ
 
@@ -104,11 +105,12 @@
             - フローの先頭へ戻る
          2. 重複なし
             - フロー継続
-      3. 在庫確認
-         1. 在庫なし
-            - フローの先頭へ戻る
-         2. 在庫あり
-            - JOB情報を出庫バッファに保存
+      3. ~~在庫確認~~
+         1. ~~在庫なし~~
+            - ~~フローの先頭へ戻る~~
+         2. ~~在庫あり~~
+            - ~~フロー継続~~
+      3. JOB情報を出庫バッファに保存
    2. 204受信
       - 通信ログ記録
    3. 異常レスポンス
@@ -127,12 +129,12 @@
      - フロー継続
 3. 処理入力待機
 4. 品種番号入力確認
-5. 空き容量確認
-   1. 空きなし
-      1. エラーメッセージ表示
-      2. フローの先頭へ戻る 
-   2. 空きあり
-      1. フロー継続
+5. ~~空き容量確認~~
+   1. ~~空きなし~~
+      1. ~~エラーメッセージ表示~~
+      2. ~~フローの先頭へ戻る~~ 
+   2. ~~空きあり~~
+      1. ~~フロー継続~~
 6. 品種番号をサーバーに送信
 7. 通信ログ記録
    1. 201受信
@@ -152,7 +154,7 @@
    2. JOBあり
       - フロー継続
 3. 状態を処理中に切り替え
-4. 在庫データ削除
+4. ~~在庫データ削除~~
 5. JOB開始報告送信
 6. 通信ログ記録
 7. レスポンス受信
@@ -226,7 +228,7 @@
       2. 復帰不可異常へ遷移
    2. レスポンス正常
       - 通信ログ記録
-11. 在庫データ登録
+11. ~~在庫データ登録~~
 12. 入庫動作完了
 13. フローの先頭へ戻る
 
@@ -255,18 +257,18 @@
 |ConsoleInput|||コンソール入力|
 ||InputActionAsync|`Task<bool>`|動作入力|
 ||InputStringAsync|`Task<string?>`|文字入力|
-|ISqlRepository|||在庫データアクセス用のインターフェース|
-||GetInventory()|`Task<List<Inventory>>`||
-||SearchInventory(string itemId)|`Task<bool>`||
-||GetAvailable()|`Task<int>`||
-||UpdateInventory(string itemId)|`Task`||
-||RemoveInventory(string itemId)|`Task`||
-|SqlRepository|||在庫データ取得・更新|
-||GetInventory|`Task<List<Inventory>>`|在庫一覧を取得する|
-||SearchInventory(string itemId)|`Task<bool>`|在庫確認を行う|
-||GetAvailableCapacity()|`Task<int>`|空き容量を取得する|
-||RemoveInventory(string itemId)|`Task`|在庫テーブルへ出庫操作を行う|
-||UpdateInventory(string itemId)|`Task`|在庫テーブルへ入庫操作を行う|
+|~~ISqlRepository~~|||~~在庫データアクセス用のインターフェース~~|
+||~~GetInventory()~~|~~`Task<List<Inventory>>`~~||
+||~~SearchInventory(string itemId)~~|~~`Task<bool>`~~||
+||~~GetAvailable()~~|~~`Task<int>`~~||
+||~~UpdateInventory(string itemId)~~|~~`Task`~~||
+||~~RemoveInventory(string itemId)~~|~~`Task`~~||
+|~~SqlRepository~~|||~~在庫データ取得・更新~~|
+||~~GetInventory~~|~~`Task<List<Inventory>>`~~|~~在庫一覧を取得する~~|
+||~~SearchInventory(string itemId)~~|~~`Task<bool>`~~|~~在庫確認を行う~~|
+||~~GetAvailableCapacity()~~|~~`Task<int>`~~|~~空き容量を取得する~~|
+||~~RemoveInventory(string itemId)~~|~~`Task`~~|~~在庫テーブルへ出庫操作を行う~~|
+||~~UpdateInventory(string itemId)~~|~~`Task`~~|~~在庫テーブルへ入庫操作を行う~~|
 |OnlineBody|||オンライン通知要求用のレコード|
 ||AvailableCapacity|`int`|空き容量|
 ||Stocks|`List<Inventory>`|在庫テーブル内の商品個別ID|
@@ -312,19 +314,19 @@ Tasks
 
 ConsoleInput
 
-Repositories
-- ISqlRepository
-  - GetInventory()
-  - SearchInventory()
-  - GetAvailableCapacity()
-  - RemoveInventory()
-  - UpdateInventory()
-- SqlRepository
-  - GetInventory
-  - SearchInventory
-  - GetAvailable
-  - RemoveInventory
-  - UpdateInventory
+~~Repositories~~
+- ~~ISqlRepository~~
+  - ~~GetInventory()~~
+  - ~~SearchInventory()~~
+  - ~~GetAvailableCapacity()~~
+  - ~~RemoveInventory()~~
+  - ~~UpdateInventory()~~
+- ~~SqlRepository~~
+  - ~~GetInventory~~
+  - ~~SearchInventory~~
+  - ~~GetAvailable~~
+  - ~~RemoveInventory~~
+  - ~~UpdateInventory~~
 
 Models
 - OnlineBody
