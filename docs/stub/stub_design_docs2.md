@@ -307,7 +307,8 @@ Task
 - PickingTask
 - StoringTask
 - ApiResponceHandler
-- ConsoleInput
+
+ConsoleInput
 
 Repositories
 - ISqlRepository
