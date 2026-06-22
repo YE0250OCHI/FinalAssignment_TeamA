@@ -1,3 +1,3 @@
 <Solution>
-  <Project Path="SimpleAutomaticStorageSystem.Server/src/SimpleAutomaticStorageSystem.Server.csproj" />
+  <Project Path="src/SimpleAutomaticStorageSystem.Server/SimpleAutomaticStorageSystem.Server.csproj" />
 </Solution>
