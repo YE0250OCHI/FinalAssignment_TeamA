@@ -158,13 +158,13 @@ stateDiagram-v2
 Unassigned --> Assigned : 商品割当
 Unassigned --> Aborted : 異常発生
 
-Assigned --> Transferring : initiated
+Assigned --> Transferring : Initiated
 Assigned --> Aborted : 異常発生
 
-Transferring --> WaitOut : completed
+Transferring --> WaitOut : Completed
 Transferring --> Aborted : 異常発生
 
-WaitOut --> Completed : removed
+WaitOut --> Completed : Removed
 WaitOut --> Aborted : 異常発生
 
 Unassigned --> Canceled : キャンセルされた
@@ -181,9 +181,9 @@ stateDiagram-v2
 
 [*] --> Assigned : 入庫依頼
 
-Assigned --> Transferring : initiated
+Assigned --> Transferring : Initiated
 
-Transferring --> Completed : removed
+Transferring --> Completed : Completed
 
 Assigned --> Aborted : 異常
 Transferring --> Aborted : 異常
@@ -220,9 +220,9 @@ Canceled --> [*]
 
 - JOBは、以下の状態のときに時限をもち、経過時間が時限を超過した際に、タイムアウト扱いとする
   - Unassigned -> 出庫可能な在庫がないために割り当てができないとき
-  - Assigned -> 自動倉庫からInitiateが返ってこないとき
-  - Transferring -> 自動倉庫からCompleteが返ってこないとき
-  - WaitOut -> 自動倉庫からRemoveが返ってこないとき
+  - Assigned -> 自動倉庫からInitiatedが返ってこないとき
+  - Transferring -> 自動倉庫からCompletedが返ってこないとき
+  - WaitOut -> 自動倉庫からRemovedが返ってこないとき
 - タイムアウト扱いになった、JOBは異常終了される
 
 ### 設定時間
