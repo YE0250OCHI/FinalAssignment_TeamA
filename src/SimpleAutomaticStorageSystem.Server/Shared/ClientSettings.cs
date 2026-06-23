@@ -3,26 +3,47 @@
 /// <summary>
 /// クライアントの登録情報
 /// </summary>
-/// <param name="Devices">スマホ端末</param>
-/// <param name="Equipments">自動倉庫端末</param>
-public record ClientSettings(
-    List<DeviceSetting> Devices,
-    List<EquipmentSetting> Equipments);
+public class ClientSettings
+{
+    /// <summary>
+    /// スマホ端末設定
+    /// </summary>
+    public required List<DeviceSetting> Devices { get; init; }
+
+    /// <summary>
+    /// 自動倉庫端末設定
+    /// </summary>
+    public required List<EquipmentSetting> Equipments { get; init; }
+}
 
 /// <summary>
 /// 登録済みスマホ
 /// </summary>
-/// <param name="DiveceId">スマホID</param>
-/// <param name="IPAddress">IPアドレス</param>
-public record DeviceSetting(
-    string DiveceId,
-    string IPAddress);
+public class DeviceSetting
+{
+    /// <summary>
+    /// スマホID
+    /// </summary>
+    public required string DiveceId { get; init; }
+
+    /// <summary>
+    /// IPアドレス
+    /// </summary>
+    public required string IPAddress { get; init; }
+}
 
 /// <summary>
 /// 登録済み自動倉庫
 /// </summary>
-/// <param name="EquipmentId">自動倉庫ID</param>
-/// <param name="IPAddress">IPアドレス</param>
-public record EquipmentSetting(
-    string EquipmentId,
-    string IPAddress);
+public class EquipmentSetting
+{
+    /// <summary>
+    /// 自動倉庫ID
+    /// </summary>
+    public required string EquipmentId { get; init; }
+
+    /// <summary>
+    /// IPアドレス
+    /// </summary>
+    public required string IPAddress { get; init; }
+}

@@ -6,7 +6,7 @@
 /// <param name="JobId">JOB番号</param>
 /// <param name="JobType">JOB種別</param>
 /// <param name="JobStatus">JOB状態</param>
-/// <param name="DeviceId">スマホID（出庫依頼元、入庫はnull）</param>
+/// <param name="DeviceId">スマホID（出庫依頼元）、入庫はnull</param>
 /// <param name="ItemCode">品種コード</param>
 /// <param name="ItemId">商品ID</param>
 /// <param name="EquipmentId">自動倉庫ID</param>

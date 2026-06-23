@@ -9,13 +9,13 @@ namespace SimpleAutomaticStorageSystem.Server.Shared;
 public class ClientValidator(IOptions<ClientSettings> options)
 {
     // スマホの認証設定
-    private readonly IReadOnlyDictionary<string, string> _devices =
+    private readonly IReadOnlyDictionary<string, string> _devicesMap =
         options.Value.Devices.ToDictionary(
             x => x.IPAddress,
             x => x.DiveceId);
 
     // 自動倉庫の認証設定
-    private readonly IReadOnlyDictionary<string, string> _equipments =
+    private readonly IReadOnlyDictionary<string, string> _equipmentsMap =
         options.Value.Equipments.ToDictionary(
             x => x.IPAddress,
             x => x.EquipmentId);
@@ -30,7 +30,7 @@ public class ClientValidator(IOptions<ClientSettings> options)
     /// <param name="ipAddress">IPアドレス</param>
     /// <returns></returns>
     public bool IsValidDevice(string ipAddress, out string? device) =>
-        _devices.TryGetValue(ipAddress, out device);
+        _devicesMap.TryGetValue(ipAddress, out device);
     
     /// <summary>
     /// 自動倉庫の認証を行う
@@ -38,6 +38,6 @@ public class ClientValidator(IOptions<ClientSettings> options)
     /// <param name="ipAddress">IPアドレス</param>
     /// <returns></returns>
     public bool IsValidEquipment(string ipAddress, out string? device) =>
-        _equipments.TryGetValue(ipAddress, out device);
+        _equipmentsMap.TryGetValue(ipAddress, out device);
 
 }

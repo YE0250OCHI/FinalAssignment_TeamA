@@ -22,57 +22,60 @@ public class RacksApiController(
     /// オンライン要求
     /// </summary>
     /// <param name="">JOB番号</param>
-    /// <returns>レスポンス</returns>
+    /// <response code="204">オンライン状態に移行した</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("online")]
     public async Task<IActionResult> RequestOnlineAsync()
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
             // オンライン状態へ移行する
-            await jobManager.SetOnlineAsync(equipmentId);
-
-            // 成功：オンラインに遷移した
-            statusCode = 204;
+            await jobManager.SetOnlineAsync(equipmentId!);
 
             logger.LogInformation(
+                "自動倉庫オンライン移行 EquipmentId={EquipmentId}",
+                equipmentId);
+
+            // 成功：オンラインに遷移した
+            logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status204NoContent);
 
             return NoContent();
 
         }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
@@ -81,33 +84,25 @@ public class RacksApiController(
     /// <summary>
     /// 次JOB問合せ
     /// </summary>
-    /// <returns>レスポンス</returns>
+    /// <response code="200">実行可能なJOBが存在する</response>
+    /// <response code="204">実行可能なJOBが存在しない</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="409">その自動倉庫は出庫JOBを実行可能な状態ではない（状態不一致）</response>
+    /// <response code="500">内部エラー</response>
     [HttpGet("job")]
     public async Task<IActionResult> GetNextJobAsync()
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
             // JOBの取得を試みる
-            // JobModel? job = xxx
+            // 出荷JOBを割当できない -> 409スロー
 
 
 
@@ -118,64 +113,71 @@ public class RacksApiController(
             // 成功：次JOBを配信
 
 
-            // 成功：配信するJOBがない
-            statusCode = 204;
 
+
+            // 成功：配信するJOBがない
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status204NoContent);
 
             return NoContent();
 
         }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
-
     }
 
     /// <summary>
     /// JOB作業開始報告
     /// </summary>
     /// <param name="id">JOB番号</param>
-    /// <returns>レスポンス</returns>
+    /// <response code="204">状態遷移に成功した</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="403">JOBアクセスの権限がない</response>
+    /// <response code="404">指定されたIDが存在しない</response>
+    /// <response code="409">状態遷移ができない（状態不一致）</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("job/{id}/initiate")]
     public async Task<IActionResult> ReportJobInitiateAsync(string id)
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
+            // JOBの遷移を試みる
+            // アクセス権がない -> 403スロー
+            // JOB番号がない -> 404スロー
+            // 状態遷移に失敗 -> 409スロー
 
 
 
@@ -186,28 +188,37 @@ public class RacksApiController(
 
 
             // 成功：遷移した
-            statusCode = 204;
-
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status204NoContent);
 
             return NoContent();
 
         }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
@@ -217,30 +228,28 @@ public class RacksApiController(
     /// JOB作業完了報告
     /// </summary>
     /// <param name="id">JOB番号</param>
-    /// <returns>レスポンス</returns>
+    /// <response code="204">状態遷移に成功した</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="403">JOBアクセスの権限がない</response>
+    /// <response code="404">指定されたIDが存在しない</response>
+    /// <response code="409">状態遷移ができない（状態不一致）</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("job/{id}/complete")]
     public async Task<IActionResult> ReportJobCompleteAsync(string id)
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
+
+            // JOBの遷移を試みる
+            // アクセス権がない -> 403スロー
+            // JOB番号がない -> 404スロー
+            // 状態遷移に失敗 -> 409スロー
 
 
 
@@ -252,65 +261,68 @@ public class RacksApiController(
 
 
             // 成功：遷移した
-            statusCode = 204;
-
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status204NoContent);
 
             return NoContent();
 
         }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
     }
 
-
-
     /// <summary>
     /// 取出し完了報告
     /// </summary>
     /// <param name="id">JOB番号</param>
-    /// <returns>レスポンス</returns>
+    /// <response code="204">状態遷移に成功した</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="403">JOBアクセスの権限がない</response>
+    /// <response code="404">指定されたIDが存在しない</response>
+    /// <response code="409">状態遷移ができない（状態不一致）</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("job/{id}/remove")]
     public async Task<IActionResult> ReportItemRemoveAsync(string id)
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
-
+            // JOBの遷移を試みる
+            // アクセス権がない -> 403スロー
+            // JOB番号がない -> 404スロー
+            // 状態遷移に失敗 -> 409スロー
 
 
 
@@ -320,28 +332,37 @@ public class RacksApiController(
 
 
             // 成功：遷移した
-            statusCode = 204;
-
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status204NoContent);
 
             return NoContent();
 
         }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
@@ -350,63 +371,95 @@ public class RacksApiController(
     /// <summary>
     /// 入庫要求
     /// </summary>
-    /// <returns>レスポンス</returns>
+    /// <response code="201">入庫JOBの作成に成功した</response>
+    /// <response code="400">入庫要求のレスポンスが不正</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="409">その自動倉庫は入庫JOBを実行可能な状態ではない（状態不一致）</response>
+    /// <response code="422">商品の品種コードが不正、または、在庫がない</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("putaway-order")]
     public async Task<IActionResult> RequestPutawayJobAsync()
     {
-        int statusCode;
-
         try
         {
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
+            // JSONの確認
+            // 変換失敗で、JsonException発生 -> 400スロー
+            PutawayRequest putawayRequest =
+                await JsonSerializer.DeserializeAsync<PutawayRequest>(Request.Body)
+                ?? throw new JsonException();
 
+            // 入庫JOBの登録を実行
+            // 品種コードが不正、または、在庫がない -> 422スロー
 
+            /*
+             * 
+             * JobIssuerに処理を委譲
+             * 
+             */
 
+            // 入庫JOBの割り当てを実行
+            // 入庫JOBの割り当てに失敗 -> 409スロー
 
+            /*
+             * 
+             * JobAssignerに処理を委譲
+             * 
+             */
 
-
-
-
+            // Dto化
 
             // 成功：入庫JOBを作成した
-            statusCode = 201;
-
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
-                statusCode);
+                StatusCodes.Status201Created);
 
             return Created();
 
         }
+        catch (JsonException)
+        {
+            // JSON変換失敗時の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                StatusCodes.Status400BadRequest,
+                "リクエストボディが不正");
+
+            return StatusCode(
+                StatusCodes.Status400BadRequest,
+                new { error = "INVALID_REQUEST" });
+
+        }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
+
+        }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
@@ -415,7 +468,10 @@ public class RacksApiController(
     /// <summary>
     /// エラー報告
     /// </summary>
-    /// <returns>レスポンス</returns>
+    /// <response code="204">エラーを受領した</response>
+    /// <response code="400">エラー報告のレスポンスが不正</response>
+    /// <response code="401">未登録端末からのアクセス</response>
+    /// <response code="500">内部エラー</response>
     [HttpPost("alarms")]
     public async Task<IActionResult> ReportAlarmsAsync()
     {
@@ -426,24 +482,28 @@ public class RacksApiController(
             // ログ＆認証を行う
             if (TryInitialize(HttpContext, out var equipmentId) == false)
             {
-                // 未登録自動倉庫からの要求
-                statusCode = 403;
-
-                logger.LogWarning(
-                    "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                    statusCode,
-                    "未登録自動倉庫からの要求");
-
-                return StatusCode(
-                    statusCode,
-                    new { error = HttpErrors.UNREGISTERED_EQUIPMENT });
-
+                // 未登録自動倉庫からの要求 -> 401スロー
+                throw new UnregisteredDeviceException();
             }
 
+            // JSONの確認
+            // 変換失敗で、JsonException発生 -> 400スロー
+            AlarmRequest alarmRequest =
+                await JsonSerializer.DeserializeAsync<AlarmRequest>(Request.Body)
+                ?? throw new JsonException();
 
+            logger.LogWarning(
+                "自動倉庫異常 EquipmentId={EquipmentId} AlarmCode={AlarmCode} OccurredAt={OccurredAt}",
+                equipmentId,
+                alarmRequest.AlarmCode,
+                alarmRequest.OccurredAt);
 
+            // 装置オフライン化
+            await jobManager.SetOfflineAsync(equipmentId!);
 
-
+            logger.LogWarning(
+                "自動倉庫オフライン移行 EquipmentId={EquipmentId}",
+                equipmentId);
 
 
             // 成功：受領した
@@ -458,38 +518,45 @@ public class RacksApiController(
         }
         catch (JsonException)
         {
-            // JSONデシリアライズ失敗
-            statusCode = 400;
-
+            // JSON変換失敗時の例外処理
             logger.LogWarning(
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
-                "JSON変換に失敗");
+                StatusCodes.Status400BadRequest,
+                "リクエストボディが不正");
 
             return StatusCode(
-                statusCode,
-                new { error = HttpErrors.INVALID_REQUEST });
+                StatusCodes.Status400BadRequest,
+                new { error = "INVALID_REQUEST" });
+
+        }
+        catch (ApiException ex)
+        {
+            // 業務エラー系の例外処理
+            logger.LogWarning(
+                "API異常応答 StatusCode={StatusCode} Reason={Reason}",
+                ex.StatusCode,
+                ex.Message);
+
+            return StatusCode(
+                ex.StatusCode,
+                new { error = ex.ErrorCode });
 
         }
         catch (Exception ex)
         {
-            // 内部エラー発生
-            statusCode = 500;
-
+            // 内部エラーの例外処理
             logger.LogError(
                 ex,
                 "API異常応答 StatusCode={StatusCode} Reason={Reason}",
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 "内部エラー");
 
             return StatusCode(
-                statusCode,
+                StatusCodes.Status500InternalServerError,
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
-
     }
-
 
     // =========================
     //   プライベートメソッド
@@ -518,8 +585,4 @@ public class RacksApiController(
 
         return result;
     }
-
-    // JOBをDtoに変換する
-
-
 }

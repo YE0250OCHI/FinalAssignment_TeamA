@@ -12,8 +12,8 @@ public class JobManager(
     IEquipmentsRepository equipments)
 {
     // JOB異常終了の理由
-    private const string INVALID_STATUS_TRANSITION = "";
-    private const string TIMEOUT = "";
+    private const string INVALID_STATUS_TRANSITION = "装置停止による強制終了";
+    private const string TIMEOUT = "タイムアウト";
     private const string EQUIPMENT_STOPPED = "";
 
     // DB接続文字列
@@ -21,20 +21,25 @@ public class JobManager(
         config.GetConnectionString("DefaultConnection") ?? string.Empty;
 
 
+    // =========================
+    //   公開メソッド
+    // =========================
+
     /// <summary>
     /// 装置の保持JOBを異常終了させ、装置をオフライン状態にする。
     /// </summary>
-    /// <returns></returns>
     public async Task SetOnlineAsync(string equipmentId) =>
-        await SetEquipmentStatusAsync(equipmentId, EquipmentStatus.Online);
+        await SetEquipmentStatusAsync(
+            equipmentId,
+            EquipmentStatus.Online);
 
     /// <summary>
     /// 装置の保持JOBを異常終了させ、装置をオフライン状態にする。
     /// </summary>
-    /// <returns></returns>
     public async Task SetOfflineAsync(string equipmentId) =>
-        await SetEquipmentStatusAsync(equipmentId, EquipmentStatus.Offline);
-
+        await SetEquipmentStatusAsync(
+            equipmentId,
+            EquipmentStatus.Offline);
 
 
     // =========================
@@ -44,8 +49,9 @@ public class JobManager(
     /// <summary>
     /// 装置の保持JOBを異常終了させ、装置を指定した状態にする。
     /// </summary>
-    /// <returns></returns>
-    public async Task SetEquipmentStatusAsync(string equipmentId, EquipmentStatus nextStatus)
+    public async Task SetEquipmentStatusAsync(
+        string equipmentId,
+        EquipmentStatus nextStatus)
     {
         // IDの空白がないか
         ArgumentNullException.ThrowIfNullOrWhiteSpace(equipmentId);
@@ -63,20 +69,36 @@ public class JobManager(
             // 装置が保持する出庫JOBを異常終了にする
             string? PickingJobId;
 
+                /* jobsテーブル操作 */
 
             logger.LogWarning(
                 "JOB異常終了 JobId={JobId} Reason={Reason}",
                 PickingJobId,
-                "装置停止による強制終了");
+                INVALID_STATUS_TRANSITION);
+
+            // JOB状態がAssignedならば在庫を戻す
+
+                /* itemsテーブル操作 */
 
             // 装置が保持する入庫JOBを異常終了にする
             string? PutawayJobId;
 
+                /* jobsテーブル操作 */
 
+            logger.LogWarning(
+                "JOB異常終了 JobId={JobId} Reason={Reason}",
+                PutawayJobId,
+                INVALID_STATUS_TRANSITION);            
 
             // 装置が保持するJOBを解除する
 
+                /* equipmentsテーブル操作 */
+
             // 装置状態を nextStatus にする
+
+                /* equipmentsテーブル操作 */
+
+
 
             // コミット
             await transaction.CommitAsync();
