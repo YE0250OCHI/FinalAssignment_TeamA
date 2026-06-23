@@ -232,12 +232,10 @@ Canceled --> [*]
 
 |状態|タイムアウト時間(s)|
 |:---|:---|
-|Assigned|15|
-|Picking|30|
+|Unassigned|120|
+|Assigned|30|
+|Transferring|30|
 |WaitOut|30|
-|Putaway|30|
-
-読み方：この状態のときに、○○秒経過したらタイムアウト扱いにする
 
 ### 異常時の商品の取り扱い
 
