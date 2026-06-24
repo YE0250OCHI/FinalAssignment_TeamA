@@ -18,10 +18,21 @@ public record ItemModel(
     DateTime? PickedAt);
 
 /// <summary>
+/// 商品の品種
+/// </summary>
+/// <param name="ItemCode">品種コード</param>
+/// <param name="ItemName">品種名</param>
+public record ItemTypeModel(
+    string ItemCode,
+    string ItemName);
+
+/// <summary>
 /// 在庫状態
 /// </summary>
 public enum StockStatus
 {
+    None, // 管理対象外になった
     Stored, // 保管中
-    Reserved // 割当が実行された
+    Reserved, // 割当が実行された
+    Transferring // 搬送中
 }

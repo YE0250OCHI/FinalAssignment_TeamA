@@ -29,6 +29,32 @@ public interface IEquipmentsRepository
     // =========================
 
     /// <summary>
+    /// 出庫JOBの割り当て
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="pickingJobId">出庫JOB番号</param>
+    Task AssignPickingJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId,
+        string pickingJobId);
+
+    /// <summary>
+    /// 入庫JOBの割り当て
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="putawayJobId">入庫JOB番号</param>
+    Task AssignPutawayJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId,
+        string putawayJobId);
+
+    /// <summary>
     /// 自動倉庫をID指定で、状態変更する
     /// </summary>
     /// <param name="connection">DB接続</param>

@@ -3,6 +3,7 @@ using SimpleAutomaticStorageSystem.Server.Controllers.Dto;
 using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
+using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 using System.Text.Json;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
@@ -14,8 +15,8 @@ namespace SimpleAutomaticStorageSystem.Server.Controllers;
 [ApiController]
 public class RacksApiController(
     ILogger<RacksApiController> logger,
-    JobManager jobManager,
     JobAssigner jobAssigner,
+    JobManager jobManager,
     JobViewer jobViewer,
     JobIssuer jobIssuer,
     ClientValidator validator) : ControllerBase
@@ -91,7 +92,7 @@ public class RacksApiController(
     /// <response code="401">未登録端末からのアクセス</response>
     /// <response code="409">その自動倉庫は出庫JOBを実行可能な状態ではない（状態不一致）</response>
     /// <response code="500">内部エラー</response>
-    [HttpGet("job")]
+    [HttpGet("jobs")]
     public async Task<IActionResult> GetNextJobAsync()
     {
         try
@@ -101,25 +102,28 @@ public class RacksApiController(
             Initialize(HttpContext, out var equipmentId);
 
             // JOBの割当を行う
-            // 出荷JOBを割当できない -> 409スロー
+            // その自動倉庫は出庫JOBを実行可能な状態ではない -> 409スロー
+            AssignedJobDto? jobDto =
+                await jobAssigner.AssignPickingJobForEquipmentAsync(equipmentId);
 
-            /*
-             * 
-             * JobAssignerに処理を委譲
-             * 
-             */
+            if (jobDto is not null)
+            {
+                // 成功：次JOBを配信
+                logger.LogInformation(
+                    "API正常応答 StatusCode={StatusCode}",
+                    StatusCodes.Status200OK);
 
-            // 成功：次JOBを配信
+                return Ok(jobDto);
+            }
+            else
+            {
+                // 成功：配信するJOBがない
+                logger.LogInformation(
+                    "API正常応答 StatusCode={StatusCode}",
+                    StatusCodes.Status204NoContent);
 
-
-
-
-            // 成功：配信するJOBがない
-            logger.LogInformation(
-                "API正常応答 StatusCode={StatusCode}",
-                StatusCodes.Status204NoContent);
-
-            return NoContent();
+                return NoContent();
+            }
 
         }
         catch (ApiException ex)
@@ -161,7 +165,7 @@ public class RacksApiController(
     /// <response code="404">指定されたIDが存在しない</response>
     /// <response code="409">状態遷移ができない（状態不一致）</response>
     /// <response code="500">内部エラー</response>
-    [HttpPost("job/{id}/initiate")]
+    [HttpPost("jobs/{id}/initiate")]
     public async Task<IActionResult> ReportJobInitiateAsync(string id)
     {
         try
@@ -226,7 +230,7 @@ public class RacksApiController(
     /// <response code="404">指定されたIDが存在しない</response>
     /// <response code="409">状態遷移ができない（状態不一致）</response>
     /// <response code="500">内部エラー</response>
-    [HttpPost("job/{id}/complete")]
+    [HttpPost("jobs/{id}/complete")]
     public async Task<IActionResult> ReportJobCompleteAsync(string id)
     {
         try
@@ -299,7 +303,7 @@ public class RacksApiController(
     /// <response code="404">指定されたIDが存在しない</response>
     /// <response code="409">状態遷移ができない（状態不一致）</response>
     /// <response code="500">内部エラー</response>
-    [HttpPost("job/{id}/remove")]
+    [HttpPost("jobs/{id}/remove")]
     public async Task<IActionResult> ReportItemRemoveAsync(string id)
     {
         try
@@ -378,8 +382,15 @@ public class RacksApiController(
                 await JsonSerializer.DeserializeAsync<PutawayRequest>(Request.Body)
                 ?? throw new JsonException();
 
+            // 採番
+
+            string jobId;
+
+
             // 入庫JOBの登録を実行
-            // 品種コードが不正、または、在庫がない -> 422スロー
+            // 品種コードが不正 -> 422スロー
+
+            string itemId;
 
             /*
              * 
@@ -389,21 +400,17 @@ public class RacksApiController(
 
             // 入庫JOBの割り当てを実行
             // 入庫JOBの割り当てに失敗 -> 409スロー
-
-            /*
-             * 
-             * JobAssignerに処理を委譲
-             * 
-             */
-
-            // Dto化
+            AssignedJobDto? jobDto =
+                await jobAssigner.AssignPutawayJobForEquipmentAsync(equipmentId, itemId, jobId);
 
             // 成功：入庫JOBを作成した
             logger.LogInformation(
                 "API正常応答 StatusCode={StatusCode}",
                 StatusCodes.Status201Created);
 
-            return Created();
+            return Created(
+                $"/api/v1/racks/jobs/{jobDto.JobId}",
+                jobDto);
 
         }
         catch (JsonException)

@@ -4,7 +4,7 @@ namespace SimpleAutomaticStorageSystem.Server.Repositories;
 
 public class JobsRepository
 {
-    // タイムスタンプカラム
+    // タイムスタンプカラム対応マップ
     private readonly IReadOnlyDictionary<
         JobType,
         IReadOnlyDictionary<JobStatus, string>>
@@ -20,6 +20,7 @@ public class JobsRepository
                 },
                 [JobType.Putaway] = new Dictionary<JobStatus, string> // 入庫JOBの場合
                 {
+                    [JobStatus.Assigned] = "assigned_at", // 未割当→割当済み
                     [JobStatus.Transferring] = "initiated_at", // 割当済み→搬送中
                     [JobStatus.Completed] = "completed_at", // 搬送中→完了
                 },

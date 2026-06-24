@@ -35,6 +35,15 @@ public interface IJobsRepository
         SqlConnection connection,
         SqlTransaction? transaction);
 
+    /// <summary>
+    /// 未割当のJOB一覧を取得する
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <returns>JobModelリスト</returns>
+    Task<List<JobModel>> GetUnassignedPickingJobsAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction);
 
     // =========================
     //   参照：公開用DTO
@@ -81,10 +90,35 @@ public interface IJobsRepository
         SqlTransaction? transaction,
         CreateJobDto newJob);
 
+    /// <summary>
+    /// 最新のJOBを参照し、JOB番号の採番を行う
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <returns>新しいJOB番号</returns>
+    Task<string> GenerateJobIdAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction);
+
 
     // =========================
     //   更新
     // =========================
+
+    /// <summary>
+    /// JOBに商品、自動倉庫を割り当て
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="jobId">JOB番号</param>
+    /// <param name="itemId">商品ID</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    Task AssignJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string jobId,
+        string itemId,
+        string equipmentId);
 
     /// <summary>
     /// JOBの状態遷移
