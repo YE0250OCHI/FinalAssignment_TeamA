@@ -19,7 +19,7 @@ public interface IEquipmentsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="equipmentId">自動倉庫ID</param>
     /// <returns>EquipmentModel</returns>
-    Task<EquipmentModel?> GetEquipmentsByIdAsync(
+    Task<EquipmentModel?> GetEquipmentByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string equipmentId);

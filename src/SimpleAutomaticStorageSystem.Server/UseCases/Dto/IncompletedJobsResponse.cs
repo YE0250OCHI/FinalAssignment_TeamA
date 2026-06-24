@@ -16,6 +16,7 @@ public class IncompleteJobsResponse
     /// 未完了JOB一覧
     /// </summary>
     public required List<IncompleteJobInfo> Results { get; init; }
+
 }
 
 /// <summary>
@@ -46,25 +47,11 @@ public class IncompleteJobInfo
     /// <summary>
     /// 自動倉庫ID
     /// </summary>
-    public required string EquipmentId { get; init; }
+    public required string? EquipmentId { get; init; }
 
     /// <summary>
     /// キャンセル可能か
     /// </summary>
     public required bool CanCancel { get; init; }
 
-}
-
-/// <summary>
-/// スマホ公開用のJOB状態定義
-/// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum RequestJobStatus
-{
-    Waiting,
-    Working,
-    WaitOut,
-    Completed,
-    Canceled,
-    Aborted
 }

@@ -8,10 +8,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobViewer(
     IConfiguration config,
-    ILogger<JobManager> logger,
-    IJobsRepository jobs,
-    IItemsRepository items,
-    IEquipmentsRepository equipments)
+    IJobsRepository jobs)
 {
     // DB接続文字列
     private readonly string _defaultConnection =
@@ -88,11 +85,23 @@ public class JobViewer(
     /// </summary>
     /// <param name="deviceId">スマホID</param>
     /// <returns>終了済みJOB一覧DTO</returns>
-    
-    //public async Task<HistoryJobsResponse>
-    //    GetHistoryJobsResponseAsync(string deviceId)
-    //{
+    public async Task<HistoryJobsResponse>
+        GetHistoryJobsResponseAsync(string deviceId)
+    {
+        // DB接続開始
+        await using SqlConnection connection = new(_defaultConnection);
+        await connection.OpenAsync();
 
-    //}
+        // JOBリストを取得
+        List<HistoryJobInfo> jobInfos =
+            await jobs.GetHistoryJobInfosAsync(connection, null, deviceId);
+
+        // DTOを組立てリターン
+        return new HistoryJobsResponse
+        {
+            Count = jobInfos.Count,
+            Results = jobInfos
+        };
+    }
 
 }

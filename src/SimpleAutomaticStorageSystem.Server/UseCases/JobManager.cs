@@ -2,7 +2,6 @@
 using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
-using System.Transactions;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -64,7 +63,7 @@ public class JobManager(
         {
             // 対象自動倉庫は存在するか
             EquipmentModel? equipmentModel =
-                await equipments.GetEquipmentsByIdAsync(connection,transaction,equipmentId) ??
+                await equipments.GetEquipmentByIdAsync(connection,transaction,equipmentId) ??
                 throw new KeyNotFoundException($"自動倉庫ID：{equipmentId}が存在しない");
 
             // 装置が保持する出庫JOBを取得
@@ -378,12 +377,20 @@ public class JobManager(
         if (job.JobType == JobType.Picking &&
             job.JobStatus == JobStatus.Assigned)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(job.ItemId);
 
-            /*
-             * 
-             * items.stock_status_id を StockStatus.Stored に変更
-             * 
-             */
+            // 商品を取得
+            ItemModel itemModel =
+                await items.GetItemByIdAsync(connection, transaction, job.ItemId) ??
+                throw new InvalidOperationException($"DBデータが不正です。 JobId={jobId}");
+
+            // 商品状態を更新
+            await items.UpdateItemStatusByIdAsync(
+                connection,
+                transaction, 
+                job.ItemId,
+                itemModel.Status,
+                StockStatus.Stored);
 
         }
 
