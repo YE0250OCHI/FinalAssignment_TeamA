@@ -66,22 +66,22 @@ public class HistoryModel : PageModel
             // 正常終了(ステータスコード:200)時の処理
             if (response.statusCode == 200)
             {
-                return new JsonResult(new
-                {
-                    success = true
-                });
+                //return new JsonResult(new
+                //{
+                //    success = true
+                //});
             }
 
             // エラーレスポンス処理
             else
             {
-                string ErrorMessage = await HandleApiErrorAsync(response.statusCode);
-                bool success = false;
-                return new JsonResult(new
-                {
-                    success = false,
-                    message = ErrorMessage
-                });
+                //string ErrorMessage = await HandleApiErrorAsync(response.statusCode);
+                //bool success = false;
+                //return new JsonResult(new
+                //{
+                //    success = false,
+                //    message = ErrorMessage
+                //});
             }
         }
         catch (HttpRequestException ex)

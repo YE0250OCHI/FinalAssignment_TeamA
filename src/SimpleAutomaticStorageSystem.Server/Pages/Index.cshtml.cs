@@ -107,22 +107,22 @@ public class IndexModel : PageModel
             {
 
                 // キャンセル成功のフラグをtrueに
-                return new JsonResult(new
-                {
-                    success = true
-                });
+                //return new JsonResult(new
+                //{
+                //    success = true
+                //});
             }
             // 異常終了時の処理
             else
             {
                 ErrorMessage = await HandleApiErrorAsync(responce.statusCode);
                 //キャンセル失敗のポップアップ
-                ShowCancelErrorPopup = true;
-                return new JsonResult(new
-                {
-                    success = false,
-                    message = ErrorMessage
-                });
+                //ShowCancelErrorPopup = true;
+                //return new JsonResult(new
+                //{
+                //    success = false,
+                //    message = ErrorMessage
+                //});
             }
         }
         // API通信異常時の処理
