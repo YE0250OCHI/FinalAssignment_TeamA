@@ -85,7 +85,7 @@ internal class PollingPicking
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト");
+                sysLogger.Warn($"タイムアウト:出庫指示問合せ");
                 _state.State = RackState.Emergency;
             }
 
