@@ -1,4 +1,26 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿//fetch処理(未完了タスク)
+/*必要な情報
+　【送信時】
+　・3秒に一回実施
 
-// Write your JavaScript code.
+
+　【受信時】
+　・部品名
+　・ステータス
+　・キャンセル可否ステータス
+　・ステータスコード
+
+
+//fetch処理(終了済みタスク)
+/*必要な情報
+　【送信時】
+　・期間(to, from両方)
+　・並び替え順
+
+　【受信時】
+　・部品名
+　・終了時ステータス
+　・完了日(分まで)
+　・ステータスコード
+
+
