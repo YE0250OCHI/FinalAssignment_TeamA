@@ -1,4 +1,4 @@
-﻿namespace SimpleAutomaticStorageSystem.Server.Controllers;
+﻿namespace SimpleAutomaticStorageSystem.Server.Controllers.Dto;
 
 /// <summary>
 /// アラーム報告リクエストボディ定義

@@ -1,4 +1,4 @@
-﻿namespace SimpleAutomaticStorageSystem.Server.Controllers;
+﻿namespace SimpleAutomaticStorageSystem.Server.Controllers.Dto;
 
 /// <summary>
 /// 入庫要求リクエストボディ定義

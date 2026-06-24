@@ -1,3 +1,5 @@
+using NLog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,4 +25,19 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
+// ロギング設定
+ILogger<Program> logger =
+    app.Services.GetRequiredService<ILogger<Program>>();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    logger.LogInformation("サーバー起動");
+});
+
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    logger.LogInformation("サーバー停止");
+});
+
+// アプリ起動
 app.Run();

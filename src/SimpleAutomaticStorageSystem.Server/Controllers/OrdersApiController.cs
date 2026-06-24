@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NLog;
-using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
+using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
 
@@ -29,40 +26,16 @@ public class OrdersApiController(
     {
         try
         {
-            // API受信時の処理
-            HttpContext context = HttpContext;
-            string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
-            HttpRequest request = context.Request;
+            // ログ＆認証を行う
+            // 未登録スマホからの要求 -> 401スロー
+            Initialize(HttpContext, out var deviceId);
 
-            string method = request.Method;
-            PathString path = request.Path;
-            QueryString query = request.QueryString;
-
-            // ログ
-            logger.LogInformation(
-                "API要求受信 Ip={Ip} Method={Method} Uri={Path}{Query}",
-                ip,
-                method,
-                path,
-                query);
-
-            // 自動倉庫の認証
-            if (validator.IsValidDevice(ip, out var EquipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
-
-            // JOB状態の取得
-
-                /* jobViewerから未完了JOBの状態を取得 */
-
-            // JOB状態
-
-                /* 上記で取得したJOBの件数を保持 */
+            // 未完了JOBの最新状態を取得する
+            IncompleteJobsResponse response =
+                await jobViewer.GetIncompleteJobsResponseAsync(deviceId);
 
             // JOB状態の返却
-            return Ok();
+            return Ok(response);
 
         }
         catch (ApiException ex)
@@ -92,5 +65,37 @@ public class OrdersApiController(
                 new { error = HttpErrors.UNEXPECTED_ERROR });
 
         }
+    }
+
+    // =========================
+    //   プライベートメソッド
+    // =========================
+
+    private void Initialize(HttpContext context, out string deviceId)
+    {
+        string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
+        HttpRequest request = context.Request;
+
+        string method = request.Method;
+        PathString path = request.Path;
+        QueryString query = request.QueryString;
+
+
+        // ログ
+        logger.LogInformation(
+            "API要求受信 Ip={Ip} Method={Method} Uri={Path}{Query}",
+            ip,
+            method,
+            path,
+            query);
+
+        // スマホの認証
+        if (!validator.IsValidDevice(ip, out var device))
+        {
+            throw new UnregisteredDeviceException();
+        }
+
+        deviceId = device ??
+            throw new UnregisteredDeviceException();
     }
 }

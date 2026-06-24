@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SimpleAutomaticStorageSystem.Server.Infrastructures;
+using SimpleAutomaticStorageSystem.Server.Controllers.Dto;
+using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using System.Text.Json;
@@ -15,6 +16,7 @@ public class RacksApiController(
     ILogger<RacksApiController> logger,
     JobManager jobManager,
     JobAssigner jobAssigner,
+    JobViewer jobViewer,
     JobIssuer jobIssuer,
     ClientValidator validator) : ControllerBase
 {
@@ -31,14 +33,14 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
 
             // オンライン状態へ移行する
-            await jobManager.SetOnlineAsync(equipmentId!);
+            await jobManager.ChangeEquipmentStatusAsync(
+                equipmentId,
+                EquipmentStatus.Online,
+                "装置再起動");
 
             logger.LogInformation(
                 "自動倉庫オンライン移行 EquipmentId={EquipmentId}",
@@ -95,20 +97,17 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
 
-            // JOBの取得を試みる
+            // JOBの割当を行う
             // 出荷JOBを割当できない -> 409スロー
 
-
-
-
-
-
+            /*
+             * 
+             * JobAssignerに処理を委譲
+             * 
+             */
 
             // 成功：次JOBを配信
 
@@ -168,24 +167,17 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
+
+            // 次遷移状態を設定
+            JobStatus nextStatus = JobStatus.Transferring;
 
             // JOBの遷移を試みる
             // アクセス権がない -> 403スロー
             // JOB番号がない -> 404スロー
             // 状態遷移に失敗 -> 409スロー
-
-
-
-
-
-
-
-
+            await jobManager.ChangeJobStatusAsync(id, equipmentId, nextStatus);
 
             // 成功：遷移した
             logger.LogInformation(
@@ -240,25 +232,25 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
+
+            // JOBの取得
+            // JOB番号がない -> 404スロー
+            JobModel job = await jobViewer.GetJobAsync(id);
+
+            // 次遷移状態を設定
+            JobStatus nextStatus = job.JobType switch
             {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+                JobType.Picking => JobStatus.WaitOut,
+                JobType.Putaway => JobStatus.Completed,
+                _ => throw new InvalidOperationException($"JOB種別異常 JobId={id}")
+            };
 
             // JOBの遷移を試みる
             // アクセス権がない -> 403スロー
-            // JOB番号がない -> 404スロー
             // 状態遷移に失敗 -> 409スロー
-
-
-
-
-
-
-
-
-
+            await jobManager.ChangeJobStatusAsync(id, equipmentId, nextStatus);
 
             // 成功：遷移した
             logger.LogInformation(
@@ -313,23 +305,17 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
+
+            // 次遷移状態を設定
+            JobStatus nextStatus = JobStatus.Completed;
 
             // JOBの遷移を試みる
             // アクセス権がない -> 403スロー
             // JOB番号がない -> 404スロー
             // 状態遷移に失敗 -> 409スロー
-
-
-
-
-
-
-
+            await jobManager.ChangeJobStatusAsync(id, equipmentId, nextStatus);
 
             // 成功：遷移した
             logger.LogInformation(
@@ -383,11 +369,8 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
 
             // JSONの確認
             // 変換失敗で、JsonException発生 -> 400スロー
@@ -480,11 +463,8 @@ public class RacksApiController(
         try
         {
             // ログ＆認証を行う
-            if (TryInitialize(HttpContext, out var equipmentId) == false)
-            {
-                // 未登録自動倉庫からの要求 -> 401スロー
-                throw new UnregisteredDeviceException();
-            }
+            // 未登録自動倉庫からの要求 -> 401スロー
+            Initialize(HttpContext, out var equipmentId);
 
             // JSONの確認
             // 変換失敗で、JsonException発生 -> 400スロー
@@ -499,7 +479,10 @@ public class RacksApiController(
                 alarmRequest.OccurredAt);
 
             // 装置オフライン化
-            await jobManager.SetOfflineAsync(equipmentId!);
+            await jobManager.ChangeEquipmentStatusAsync(
+                equipmentId,
+                EquipmentStatus.Offline,
+                "装置アラーム報告");
 
             logger.LogWarning(
                 "自動倉庫オフライン移行 EquipmentId={EquipmentId}",
@@ -563,7 +546,7 @@ public class RacksApiController(
     // =========================
 
     // API受信時の初期化処理
-    private bool TryInitialize(HttpContext context, out string? EquipmentId)
+    private void Initialize(HttpContext context, out string equipmentId)
     {
         string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
         HttpRequest request = context.Request;
@@ -581,8 +564,12 @@ public class RacksApiController(
             query);
 
         // 自動倉庫の認証
-        bool result = validator.IsValidDevice(ip, out EquipmentId);
+        if (!validator.IsValidEquipment(ip, out var eq))
+        {
+            throw new UnregisteredDeviceException();
+        }
 
-        return result;
+        equipmentId = eq ??
+            throw new UnregisteredDeviceException();
     }
 }

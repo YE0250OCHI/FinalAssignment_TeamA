@@ -36,7 +36,7 @@ public record JobModel(
 /// </summary>
 public enum JobType
 {
-    Piking,
+    Picking,
     Putaway
 }
 
