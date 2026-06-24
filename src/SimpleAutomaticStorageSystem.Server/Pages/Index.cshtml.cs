@@ -44,7 +44,7 @@ public class IndexModel : PageModel
     //    return new JsonResult(response.IncompleteTaskList);
     //}
 
-    // メソッド　：出庫依頼 => JSで処理するなら不要
+    // メソッド　：出庫依頼
     public async Task<IActionResult> OnPostAddOrderAsync()
     {
         // 入力値確認
@@ -90,7 +90,7 @@ public class IndexModel : PageModel
     }
 
 
-    // メソッド　：キャンセル依頼 => JSで処理するなら不要
+    // メソッド　：キャンセル依頼
     /*欲しいレスポンス：ステータスコードのみ*/
     public async Task<IActionResult> OnPostCancelAsync(string jobId)
     {
@@ -139,7 +139,7 @@ public class IndexModel : PageModel
 
 
 
-    // メソッド　：ステータスを日本語に変換 => JSで処理するなら不要
+    // メソッド　：ステータスを日本語に変換
     private string ConvertStatus(string apiStatus)
     {
         return apiStatus switch
@@ -152,7 +152,7 @@ public class IndexModel : PageModel
         };
     }
 
-    // メソッド　：エラーコードを日本語に変換 => JSで処理するなら不要
+    // メソッド　：エラーコードを日本語に変換
     public async Task<string> HandleApiErrorAsync(int statusCode)
     {
         string errorCode = "";

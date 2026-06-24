@@ -55,7 +55,7 @@ public class HistoryModel : PageModel
         return Page();
     }
 
-    // メソッド ：履歴更新 => JSで処理するなら不要
+    // メソッド ：履歴更新
     public async Task<IActionResult> OnPostReloadHistoryAsync()
     {
         try
@@ -97,7 +97,7 @@ public class HistoryModel : PageModel
     }
 
 
-    // メソッド　：エラーコードを日本語に変換 => JSで処理するなら不要
+    // メソッド　：エラーコードを日本語に変換
     public async Task<string> HandleApiErrorAsync(int statusCode)
     {
         string errorCode = "";
