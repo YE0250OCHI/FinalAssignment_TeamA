@@ -1,21 +1,21 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobAssigner(
-    IConfiguration config,
+    IOptions<DatabaseSettings> settings,
     ILogger<JobManager> logger,
     IJobsRepository jobs,
     IItemsRepository items,
     IEquipmentsRepository equipments)
 {
     // DB接続文字列
-    private readonly string _defaultConnection =
-        config.GetConnectionString("DefaultConnection") ?? string.Empty;
+    private readonly string _defaultConnection = settings.Value.DefaultConnection;
 
 
     // =========================
@@ -26,7 +26,7 @@ public class JobAssigner(
     /// JOB番号を指定して、商品の割り当てを実行する
     /// </summary>
     /// <param name="jobId">JOB番号</param>
-    public async Task AssignItemForJobAsync(string jobId)
+    public async Task<AssignedJobDto?> AssignItemForJobAsync(string jobId)
     {
         // DB接続開始
         await using SqlConnection connection = new(_defaultConnection);
@@ -53,10 +53,14 @@ public class JobAssigner(
             }
 
 
-            // 割り当て可能な在庫を取得、なければ在庫なし例外スロー
-            ItemModel availableItem =
-                await items.GetAvailableItemAsync(connection, transaction, currentJob.ItemCode) ??
-                throw new OutOfStockException();
+            // 割り当て可能な在庫を取得、なければ割り当てを終了
+            ItemModel? availableItem =
+                await items.GetAvailableItemAsync(connection, transaction, currentJob.ItemCode);
+
+            if(availableItem is null)
+            {
+                return null;
+            }
 
             // 装置IDを取得
             string equipmentId = availableItem.EquipmentId;
@@ -107,6 +111,14 @@ public class JobAssigner(
                 availableItem.ItemId,
                 equipmentId);
 
+            // 割り当て済みJOBの返却
+            return new()
+            {
+                JobId = jobId,
+                JobType = JobType.Picking,
+                ItemId = availableItem.ItemId,
+                EquipmentId = equipmentId
+            };
 
         }
         catch
@@ -239,11 +251,12 @@ public class JobAssigner(
                 equipmentId);
 
             // 割当に成功
-            return new AssignedJobDto
+            return new()
             {
                 JobId = jobModel.JobId,
                 JobType = jobModel.JobType,
-                ItemId = itemModel.ItemId
+                ItemId = itemModel.ItemId,
+                EquipmentId = equipmentId
             };
 
         }

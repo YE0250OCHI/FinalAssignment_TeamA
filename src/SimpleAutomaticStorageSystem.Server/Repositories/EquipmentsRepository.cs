@@ -1,5 +1,7 @@
-﻿namespace SimpleAutomaticStorageSystem.Server.Repositories;
+﻿using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
-public class EquipmentsRepository
+namespace SimpleAutomaticStorageSystem.Server.Repositories;
+
+public class EquipmentsRepository:IEquipmentsRepository
 {
 }

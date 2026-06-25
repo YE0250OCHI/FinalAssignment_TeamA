@@ -1,6 +1,6 @@
 ﻿using SimpleAutomaticStorageSystem.Server.Domains;
 
-namespace SimpleAutomaticStorageSystem.Server.UseCases.Dto;
+namespace SimpleAutomaticStorageSystem.Server.Dto;
 
 /// <summary>
 /// JOBの新規作成用DTO

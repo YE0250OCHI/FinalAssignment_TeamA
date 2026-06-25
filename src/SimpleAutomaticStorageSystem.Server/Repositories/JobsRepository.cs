@@ -1,8 +1,9 @@
 ﻿using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
 namespace SimpleAutomaticStorageSystem.Server.Repositories;
 
-public class JobsRepository
+public class JobsRepository: IJobsRepository
 {
     // タイムスタンプカラム対応マップ
     private readonly IReadOnlyDictionary<

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
@@ -64,6 +63,16 @@ public interface IItemsRepository
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode);
+
+    /// <summary>
+    /// ItemTypeの一覧を取り出す
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <returns>品種データ</returns>
+    Task<List<ItemTypeModel>> GetItemTypesAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction);
 
 
     // =========================

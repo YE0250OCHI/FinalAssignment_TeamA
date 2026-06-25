@@ -17,7 +17,7 @@ public class TimeoutMonitorService(
         TimeSpan.FromSeconds(options.Value.MonitorIntervalSeconds);
 
     // タイムアウト設定辞書
-    private readonly IReadOnlyDictionary<JobStatus, TimeSpan> _timeoutsMap =
+    private readonly Dictionary<JobStatus, TimeSpan> _timeoutsMap =
         options.Value.Timeouts.ToDictionary(
             x => x.Status,
             x => TimeSpan.FromSeconds(x.TimeoutSeconds));

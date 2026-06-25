@@ -2,17 +2,17 @@
 using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 using SimpleAutomaticStorageSystem.Server.Shared;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
+using SimpleAutomaticStorageSystem.Server.Dto;
+using Microsoft.Extensions.Options;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobViewer(
-    IConfiguration config,
+    IOptions<DatabaseSettings> settings,
     IJobsRepository jobs)
 {
     // DB接続文字列
-    private readonly string _defaultConnection =
-        config.GetConnectionString("DefaultConnection") ?? string.Empty;
+    private readonly string _defaultConnection = settings.Value.DefaultConnection;
 
     // =========================
     //   公開メソッド
@@ -85,8 +85,11 @@ public class JobViewer(
     /// </summary>
     /// <param name="deviceId">スマホID</param>
     /// <returns>終了済みJOB一覧DTO</returns>
-    public async Task<HistoryJobsResponse>
-        GetHistoryJobsResponseAsync(string deviceId)
+    public async Task<HistoryJobsResponse> GetHistoryJobsResponseAsync(
+        string deviceId,
+        DateTime? from,
+        DateTime? to,
+        SortOrder sort)
     {
         // DB接続開始
         await using SqlConnection connection = new(_defaultConnection);
@@ -94,7 +97,8 @@ public class JobViewer(
 
         // JOBリストを取得
         List<HistoryJobInfo> jobInfos =
-            await jobs.GetHistoryJobInfosAsync(connection, null, deviceId);
+            await jobs.GetHistoryJobInfosAsync(
+                connection, null, deviceId, from, to, sort);
 
         // DTOを組立てリターン
         return new HistoryJobsResponse
@@ -104,4 +108,13 @@ public class JobViewer(
         };
     }
 
+}
+
+/// <summary>
+/// ソート順
+/// </summary>
+public enum SortOrder
+{
+    Latest,
+    Oldest
 }
