@@ -8,7 +8,7 @@
 |:---|:---|:---:|:---:|:---|
 |id|CHAR(14)|○|PK|JOB ID|
 |job_type_id|INT|○|-|JOB種別|
-|status_id|INT|○|-|JOB状態|
+|job_status|INT|○|-|JOB状態|
 |device_id|VARCHAR(10)|-|-|スマホID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
 |item_id|VARCHAR(20)|-|FK|商品個別ID|
@@ -32,7 +32,7 @@
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(20)|○|PK|商品個別ID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
-|status_id|INT|○|-|在庫状態|
+|stock_status|INT|○|-|在庫状態|
 |equipment_id|VARCHAR(10)|○|FK|在庫保持している装置ID|
 |registered_at|DATETIME|○|-|登録日時（入庫日時）|
 |picked_at|DATETIME|-|-|出庫日時|
@@ -59,7 +59,7 @@
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|VARCHAR(10)|○|PK|設備ID|
-|status_id|INT|○|-|オンライン状況|
+|equipment_status|INT|○|-|オンライン状況|
 |available_capacity|INT|○|-|空き容量|
 |picking_job_id|CHAR(14)|-|FK|割り当てられた出庫JOB番号|
 |putaway_job_id|CHAR(14)|-|FK|割り当てられた入庫JOB番号|
