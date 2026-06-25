@@ -126,13 +126,13 @@ internal class PickingTask
             }
             catch (HttpRequestException ex)
             {
-                sysLogger.Warn($"通信エラー：{ex.Message}");
+                sysLogger.Warn($"出庫作業報告 通信エラー：{ex.Message}");
                 actLogger.Info($"出庫異常:JOB番号={job.JobId} 商品ID={job.ItemId}");
                 _state.State = RackState.Emergency;
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト:出庫作業報告");
+                sysLogger.Warn($"出庫作業報告 タイムアウト");
                 actLogger.Info($"出庫異常:JOB番号={job.JobId} 商品ID={job.ItemId}");
                 _state.State = RackState.Emergency;
             }

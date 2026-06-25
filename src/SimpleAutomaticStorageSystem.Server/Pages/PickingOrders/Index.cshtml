@@ -28,7 +28,7 @@
 	</div>
 </div>
 
-@if (Model.ShowCancelErrorPopup)
+@if (Model.ErrorMessage != null)
 {
 	<div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" id="errorModal" tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered modal-sm">
