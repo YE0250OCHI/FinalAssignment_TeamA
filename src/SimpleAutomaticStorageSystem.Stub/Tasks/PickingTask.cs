@@ -18,16 +18,16 @@ internal class PickingTask
     private readonly JobManager _manager;
     private readonly ConsoleInput _key;
     private readonly HttpClient _client;
-    private readonly string _deviceUrl;
+    private readonly string _serverUrl;
     private readonly JsonSerializerOptions _options;
 
-    public PickingTask(SystemState state, JobManager manager, ConsoleInput key, HttpClient client, string deviceUrl, JsonSerializerOptions options)
+    public PickingTask(SystemState state, JobManager manager, ConsoleInput key, HttpClient client, string serverUrl, JsonSerializerOptions options)
     {
         _state = state;
         _manager = manager;
         _key = key;
         _client = client;
-        _deviceUrl = deviceUrl;
+        _serverUrl = serverUrl;
         _options = options;
     }
 
@@ -69,8 +69,8 @@ internal class PickingTask
                 Console.WriteLine($"JOB番号:{job.JobId}");
                 Console.WriteLine($"商品ID:{job.ItemId}");
 
-                sysLogger.Info($"作業開始報告:URL={_deviceUrl}/api/v1/racks/job/{job.JobId}/initiate");
-                var response = await _client.PostAsync($"{_deviceUrl}/api/v1/racks/job/{job.JobId}/initiate",null);
+                sysLogger.Info($"作業開始報告:URL={_serverUrl}/api/v1/racks/job/{job.JobId}/initiate");
+                var response = await _client.PostAsync($"{_serverUrl}/api/v1/racks/job/{job.JobId}/initiate",null);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -89,8 +89,8 @@ internal class PickingTask
                     continue;
                 }
 
-                sysLogger.Info($"作業完了報告:URL={_deviceUrl}/api/v1/racks/job/{job.JobId}/complete");
-                response = await _client.PostAsync($"{_deviceUrl}/api/v1/racks/job/{job.JobId}/complete", null);
+                sysLogger.Info($"作業完了報告:URL={_serverUrl}/api/v1/racks/job/{job.JobId}/complete");
+                response = await _client.PostAsync($"{_serverUrl}/api/v1/racks/job/{job.JobId}/complete", null);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -109,8 +109,8 @@ internal class PickingTask
                     continue;
                 }
 
-                sysLogger.Info($"取出完了報告:URL={_deviceUrl}/api/v1/racks/job/{job.JobId}/remove");
-                response = await _client.PostAsync($"{_deviceUrl}/api/v1/racks/job/{job.JobId}/remove", null);
+                sysLogger.Info($"取出完了報告:URL={_serverUrl}/api/v1/racks/job/{job.JobId}/remove");
+                response = await _client.PostAsync($"{_serverUrl}/api/v1/racks/job/{job.JobId}/remove", null);
 
                 if (!response.IsSuccessStatusCode)
                 {

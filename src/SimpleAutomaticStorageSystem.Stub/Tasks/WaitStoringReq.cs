@@ -14,15 +14,15 @@ internal class WaitStoringReq
     private readonly SystemState _state;
     private readonly JobManager _manager;
     private readonly HttpClient _client;
-    private readonly string _deviceUrl;
+    private readonly string _serverUrl;
     private readonly JsonSerializerOptions _options;
 
-    public WaitStoringReq(SystemState state, JobManager manager, HttpClient client, string deviceUrl,JsonSerializerOptions options)
+    public WaitStoringReq(SystemState state, JobManager manager, HttpClient client, string serverUrl, JsonSerializerOptions options)
     {
         _state = state;
         _manager = manager;
         _client = client;
-        _deviceUrl = deviceUrl;
+        _serverUrl = serverUrl;
         _options = options;
     }
 
