@@ -198,14 +198,15 @@ public class JobManager(
                 currentJob.JobStatus,
                 JobStatus.Canceled);
 
+            // コミット
+            await transaction.CommitAsync();
+
+            // ログ
             logger.LogInformation(
                 "JOBキャンセル JobId={JobId} DeviceId={DeviceId} Reason={Reason}",
                 jobId,
                 deviceId,
                 "端末要求");
-
-            // コミット
-            await transaction.CommitAsync();
 
         }
         catch
@@ -263,13 +264,14 @@ public class JobManager(
                 currentJob.JobStatus,
                 JobStatus.Aborted);
 
+            // コミット
+            await transaction.CommitAsync();
+
+            // ログ
             logger.LogWarning(
                 "JOB異常終了 JobId={JobId} Reason={Reason}",
                 jobId,
                 abortReasonMessage);
-
-            // コミット
-            await transaction.CommitAsync();
 
         }
         catch
@@ -446,7 +448,7 @@ public class JobManager(
     /// <exception cref="InvalidOperationException">
     /// DBデータ不整合でスローされる
     /// </exception>
-    public async Task AbortJobAsync(
+    private async Task AbortJobAsync(
         SqlConnection connection,
         SqlTransaction transaction,
         string equipmentId,

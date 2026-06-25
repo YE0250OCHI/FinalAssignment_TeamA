@@ -1,6 +1,6 @@
 ﻿using SimpleAutomaticStorageSystem.Server.Domains;
 
-namespace SimpleAutomaticStorageSystem.Server.Backgrounds;
+namespace SimpleAutomaticStorageSystem.Server.Shared;
 
 /// <summary>
 /// タイムアウト設定データ

@@ -71,16 +71,18 @@ public interface IItemsRepository
     // =========================
 
     /// <summary>
-    /// 商品在庫を登録する
+    /// 商品IDを採番し、在庫へ登録する
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
-    /// <param name="dto">在庫登録DTO</param>
-    /// <returns></returns>
-    Task RegisterItemAsync(
+    /// <param name="itemCode">品種コード</param>
+    /// <param name="equipmentId">保管先の自動倉庫</param>
+    /// <returns>採番された商品ID</returns>
+    Task<string> RegisterItemAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
-        RegisterItemDto dto);
+        string itemCode,
+        string equipmentId);
 
 
     // =========================

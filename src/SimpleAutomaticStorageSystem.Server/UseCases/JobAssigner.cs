@@ -190,12 +190,15 @@ public class JobAssigner(
             // なければ、割当可能JOBなしとして終了
             if (itemModel is null || jobModel is null)
             {
+                // ロールバック
                 await transaction.RollbackAsync();
 
+                // ログ
                 logger.LogInformation(
                     "割当可能な出庫JOBなし EquipmentId={EquipmentId}",
                     equipmentId);
 
+                // JOBなしで返す
                 return null;
 
             }
@@ -241,114 +244,6 @@ public class JobAssigner(
                 JobId = jobModel.JobId,
                 JobType = jobModel.JobType,
                 ItemId = itemModel.ItemId
-            };
-
-        }
-        catch
-        {
-            try
-            {
-                // ロールバックしてスロー
-                await transaction.RollbackAsync();
-            }
-            catch
-            {
-                /* ロールバック失敗は無視 */
-            }
-
-            // ログ
-            logger.LogWarning(
-                "自動倉庫へのJOB割当失敗 EquipmentId={EquipmentId}",
-                equipmentId);
-
-            throw;
-
-        }
-
-    }
-
-    /// <summary>
-    /// 入庫JOBの割り当て
-    /// </summary>
-    /// <param name="equipmentId">自動倉庫ID</param>
-    /// <param name="putawayJobId">入庫JOB</param>
-    /// /// <param name="itemId">商品ID</param>
-    /// <returns>割り当てられた入庫JOB</returns>
-    public async Task<AssignedJobDto> AssignPutawayJobForEquipmentAsync(
-        string equipmentId,
-        string itemId,
-        string putawayJobId)
-    {
-        // DB接続開始
-        await using SqlConnection connection = new(_defaultConnection);
-        await connection.OpenAsync();
-
-        // トランザクション開始
-        await using SqlTransaction transaction =
-            (SqlTransaction)await connection.BeginTransactionAsync();
-
-        try
-        {
-            // Jobの取得
-            JobModel jobModel =
-                await jobs.GetJobByIdAsync(connection, transaction, putawayJobId) ??
-                throw new InvalidOperationException($"JOB番号が不正 JobId={putawayJobId}");
-
-            // 入庫JOBの検証
-            if (jobModel.JobType != JobType.Putaway ||
-                jobModel.ItemId is not null ||
-                jobModel.EquipmentId is not null ||
-                jobModel.JobStatus != JobStatus.Unassigned)
-            {
-                throw new InvalidStatusException();
-            }
-
-            // 対象自動倉庫は存在するか
-            EquipmentModel? equipmentModel =
-                await equipments.GetEquipmentByIdAsync(connection, transaction, equipmentId) ??
-                throw new KeyNotFoundException($"自動倉庫ID：{equipmentId}は存在しない。");
-
-            // 自動倉庫はJOB割り当てが可能な状態か、不可なら不正状態例外スロー
-            if (equipmentModel.PutawayJobId is not null ||
-                equipmentModel.Status != EquipmentStatus.Online)
-            {
-                // 割り当てを拒否
-                throw new InvalidStatusException();
-            }
-
-            // JOBに商品、自動倉庫を割り当て
-            await jobs.AssignJobAsync(
-                connection,
-                transaction,
-                putawayJobId,
-                itemId,
-                equipmentId);
-
-            // 自動倉庫に入庫JOBを割り当て
-            await equipments.AssignPutawayJobAsync(
-                connection,
-                transaction,
-                equipmentId,
-                putawayJobId);
-
-
-
-            // コミット
-            await transaction.CommitAsync();
-
-            // ログ
-            logger.LogInformation(
-                "JOB割当成功 JobId={JobId} ItemId={ItemId} EquipmentId={EquipmentId}",
-                jobModel.JobId,
-                itemId,
-                equipmentId);
-
-            // 割当に成功
-            return new AssignedJobDto
-            {
-                JobId = putawayJobId,
-                JobType = jobModel.JobType,
-                ItemId = itemId
             };
 
         }

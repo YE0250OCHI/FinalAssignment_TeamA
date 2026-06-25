@@ -11,7 +11,7 @@ namespace SimpleAutomaticStorageSystem.Server.Controllers;
 [Route("api/v1/picking-orders")]
 [ApiController]
 public class OrdersApiController(
-    ILogger<RacksApiController> logger,
+    ILogger<OrdersApiController> logger,
     JobViewer jobViewer,
     ClientValidator validator) : ControllerBase
 {
@@ -28,7 +28,7 @@ public class OrdersApiController(
         {
             // ログ＆認証を行う
             // 未登録スマホからの要求 -> 401スロー
-            Initialize(HttpContext, out var deviceId);
+            OrdersApi(HttpContext, out var deviceId);
 
             // 未完了JOBの最新状態を取得する
             IncompleteJobsResponse response =
@@ -71,7 +71,7 @@ public class OrdersApiController(
     //   プライベートメソッド
     // =========================
 
-    private void Initialize(HttpContext context, out string deviceId)
+    private void OrdersApi(HttpContext context, out string deviceId)
     {
         string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
         HttpRequest request = context.Request;
