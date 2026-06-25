@@ -1,0 +1,83 @@
+﻿@page
+@model HistoryModel
+<div class="container my-4" style="max-width: 500px;">
+    <div class="d-flex justify-content-between align-items-center border-bottom border-primary border-2 pb-2 mb-4">
+        <h2 class="text-primary fs-3 fw-bold m-0">出庫依頼履歴</h2>
+        <div class="position-relative">
+    <button id="menuButton"
+            class="btn btn-outline-primary">
+        ☰
+    </button>
+
+    <div id="menuDropdown"
+         class="card position-absolute d-none"
+         style="right:0; top:40px; width:150px; z-index:1000;">
+
+        <a href="/Index" class="dropdown-item p-2">
+            出庫依頼
+        </a>
+
+        <a href="/History" class="dropdown-item p-2">
+            履歴
+        </a>
+    </div>
+</div>
+    </div>
+
+    <div class="mb-4">
+        <form method="get">
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-5">
+                    <input type="date" asp-for="completedAt" class="form-control form-control-sm border-dark shadow-sm" />
+                </div>
+                <div class="col-1 text-center">～</div>
+                <div class="col-5">
+                    <input type="date" asp-for="taskEndDateTo" class="form-control form-control-sm border-dark shadow-sm" />
+                </div>
+            </div>
+
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-8">
+                    <select asp-for="sort" class="form-select form-select-sm border-dark shadow-sm" onchange="this.form.submit()">
+                        <option value="latest">最新</option>
+                        <option value="oldest">古い順</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <div class="row g-2 align-items-center mb-3">
+            <div class="col-4 offset-8 text-end">
+                <form method="post" asp-page-handler="ReloadHistory">
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold w-100 shadow-sm">更新</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
+        <div class="d-flex flex-column gap-2">
+            @foreach (var item in Model.FinishedTaskList)
+            {
+                // ④ ステータスごとの色分け設定
+                string bgClass = item.status == "キャンセル" ? "bg-secondary" : (item.status == "完了" ? "bg-warning" : "bg-danger");
+                string textClass = item.status == "キャンセル" ? "text-secondary" : (item.status == "完了" ? "text-warning" : "text-danger");
+
+                <div class="d-flex justify-content-between align-items-center @bgClass bg-opacity-10 border @bgClass border-opacity-50 rounded-3 p-2 ps-3">
+                    <div class="d-flex align-items-center flex-grow-1">
+                        <span class="@textClass fw-bold me-3" style="min-width: 70px;">@item.status</span>
+                        <span class="fw-bold me-2">@item.itemName</span>
+                    </div>
+                    <div class="text-secondary small text-end text-nowrap">
+                        完了日：@item.completedAt.ToString("yyyy/MM/dd HH:mm")
+                    </div>
+                </div>
+            }
+            
+            @if (!Model.FinishedTaskList.Any())
+            {
+                <div class="text-center text-secondary py-3 small">対象の履歴はありません。</div>
+            }
+        </div>
+    </div>
+</div>
