@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
@@ -15,7 +16,11 @@ public class IndexModel : PageModel
     public string? ErrorMessage { get; set; }
     //入力　：部品選択のプルダウン
     [BindProperty]
-    public string selectedItem { get; set; } = string.Empty;
+    public string SelectedItem { get; set; } = string.Empty;
+
+    public List<SelectListItem> ItemList { get; set; } = [];
+
+
     //フラグ　：エラーポップアップ
     public bool ShowCancelErrorPopup { get; set; } = false;
 
