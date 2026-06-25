@@ -5,6 +5,7 @@ using SimpleAutomaticStorageSystem.Stub.Tools;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using static System.Net.WebRequestMethods;
 
 // ロガー生成
@@ -19,26 +20,34 @@ Console.CancelKeyPress += (sender, e) =>
     e.Cancel = true;
 };
 
+// 設定ファイル読出し
+var config = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false)
+    .Build();
+
 // HTTPクライアント生成
 HttpClient client = new()
 {
     Timeout = TimeSpan.FromSeconds(10),
 };
-string deviceUrl = "http://localhost:8080";
+string deviceUrl = config["ServerSettings:DeviceUrl"];
 sysLogger.Info($"HTTPクライアント起動:URL={deviceUrl}");
 
 // HTTPリスナー生成
 HttpListener listener = new();
-listener.Prefixes.Add("http://+:8080/api/");
+string listenerPrefixes = config["ListenerSettings:DeviceUrl"];
+listener.Prefixes.Add(listenerPrefixes);
 
 try
 {
     listener.Start();
-    sysLogger.Info("HTTPリスナー起動:Port 8080");
+    sysLogger.Info($"HTTPリスナー起動:{listenerPrefixes}");
 }
 catch(Exception ex)
 {
     listener.Close();
+    sysLogger.Error($"リスナー起動失敗:{ex}");
     listener = new();
     listener.Prefixes.Add("http://localhost:8080/api/");
     try
