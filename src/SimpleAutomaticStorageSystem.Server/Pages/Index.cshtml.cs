@@ -10,16 +10,6 @@ using System.Web;
 
 public class IndexModel : PageModel
 {
-
-    //一覧取得用Handler追加
-    public IActionResult OnGetFetchTasks()
-    {
-        var response = new IncompleteTaskResponse();
-
-        return new JsonResult(response.IncompleteTaskList);
-    }
-
-
     //出力　：エラーメッセージ表示部
     [BindProperty]
     public string? ErrorMessage { get; set; }
@@ -29,17 +19,35 @@ public class IndexModel : PageModel
     //フラグ　：エラーポップアップ
     public bool ShowCancelErrorPopup { get; set; } = false;
 
-
-    public IActionResult OnGet()
+    // メソッド ：一覧ページ表示 
+    public async Task<IActionResult> OnGetAsync()
     {
-        /*JSプログラム起動のトリガ追加*/
+        // C#で一覧取得するならAPI通信の処理を書く
+        // JSで全部やるなら不要、void OnGetで良い
+
+        // API通信：未完了タスク取得依頼送信
+
+        // レスポンス処理
+
+        // 通信異常時エラー画面へ
+
+        // 正常時画面描画
         return Page();
+
     }
 
+    //一覧取得用Handler追加 => 不要
+    //public IActionResult OnGetFetchTasks()
+    //{
+    //    var response = new IncompleteTaskResponse();
 
-    // メソッド　：追加ボタン押下時処理
+    //    return new JsonResult(response.IncompleteTaskList);
+    //}
+
+    // メソッド　：出庫依頼
     public async Task<IActionResult> OnPostAddOrderAsync()
     {
+        // 入力値確認
         if (string.IsNullOrEmpty(selectedItem))
         {
             ErrorMessage = "部品を選択してください";
@@ -48,19 +56,30 @@ public class IndexModel : PageModel
 
         try
         {
+            // API通信：出庫依頼送信
+
+            // var responce = Pickingreq
+
+            // レスポンス処理
             // 正常終了(ステータスコード:200)時の処理
             if (response.statusCode == 200)
             {
-                /*JSプログラム起動のトリガ追加*/
+                // 追加成功のフラグをtrueに
                 return Page();
             }
 
-            // 異常終了時の処理
+            // エラーレスポンス処理
             else
             {
                 //エラーメッセージを格納(HandleApiErrorAsync)
                 //エラーポップアップのフラグをtrueに
+                return Page();
             }
+        }
+        // API通信異常時の処理
+        catch(HttpRequestException ex) 
+        {
+            // 異常ページ表示など
         }
         //サーバからのレスポンスがない場合の処理
         catch
@@ -69,36 +88,47 @@ public class IndexModel : PageModel
             return Page();
         }
     }
-    //メソッド　：キャンセルボタン押下時処理
+
+
+    // メソッド　：キャンセル依頼
     /*欲しいレスポンス：ステータスコードのみ*/
     public async Task<IActionResult> OnPostCancelAsync(string jobId)
     {
         try
         {
-            var Data = new CancelTaskData();
-            /*キャンセル処理のコード追加予定*/
+            // キャンセルするJOBをリクエストボディに格納
+            // API通信：キャンセル依頼送信
 
+            // var responce = CancelReq
+            
+            // レスポンス処理
             // 正常終了(ステータスコード:201)時の処理
-            if (Data.statusCode == 201)
+            if (responce.statusCode == 201)
             {
-                /*JSでデータ取得を実行するプログラム追加予定*/
-                return new JsonResult(new
-                {
-                    success = true
-                });
+
+                // キャンセル成功のフラグをtrueに
+                //return new JsonResult(new
+                //{
+                //    success = true
+                //});
             }
             // 異常終了時の処理
             else
             {
-                ErrorMessage = await HandleApiErrorAsync(Data.statusCode);
+                ErrorMessage = await HandleApiErrorAsync(responce.statusCode);
                 //キャンセル失敗のポップアップ
-                ShowCancelErrorPopup = true;
-                return new JsonResult(new
-                {
-                    success = false,
-                    message = ErrorMessage
-                });
+                //ShowCancelErrorPopup = true;
+                //return new JsonResult(new
+                //{
+                //    success = false,
+                //    message = ErrorMessage
+                //});
             }
+        }
+        // API通信異常時の処理
+        catch (HttpRequestException ex)
+        {
+            // 異常ページ表示など
         }
         //サーバからのレスポンスがない場合の処理
         catch
@@ -142,3 +172,6 @@ public class IndexModel : PageModel
 
     }
 }
+
+// APIレスポンスボディ
+// 履歴取得と同じで良いならレコードにして共有

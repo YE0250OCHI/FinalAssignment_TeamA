@@ -9,31 +9,11 @@ using static IndexModel;
 
 public class HistoryModel : PageModel
 {
-    public class FinishedTask
-    {
-        public string jobId { get; set; }
-        public string itemCode { get; set; }
-        public string itemName { get; set; }
-        public string status { get; set; }
-        public DateTime completedAt { get; set; }
-
-    }
+    //フラグ ：エラーポップアップ
+    public bool ShowCancelErrorPopup { get; set; } = false;
 
     [BindProperty]
     public List<FinishedTask> FinishedTaskList { get; set; } = new();
-
-    //クラス ：終了済みタスク取得通信用
-    public class FinishedTaskResponse
-    {
-        //生成 ：終了済みタスクリスト
-        [BindProperty(SupportsGet = true)]
-        public List<FinishedTask> FinishedTaskList { get; set; } = new();
-
-        public int statusCode;
-    }
-
-    //フラグ ：エラーポップアップ
-    public bool ShowCancelErrorPopup { get; set; } = false;
 
     // プロパティ：Viewのasp-forとバインドするための定義を追加
     [BindProperty(SupportsGet = true)]
@@ -45,54 +25,68 @@ public class HistoryModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? sort { get; set; }
 
-    //メソッド ：起動時の未完了タスクリスト取得
+    // メソッド ：起動時の未完了タスクリスト取得
     //public async Task<IActionResult> OnGetAsync()
     //{
     //    return await GetIncompleteTask();
     //}
 
-    // メソッド ：データ更新用のGET
-
-
-
-    public IActionResult OnGet()
+    // メソッド ：履歴ページ表示
+    public async Task<IActionResult> OnGetAsync()
     {
-        var response = new FinishedTaskResponse();
-        /*データ取得を実行するプログラム追加予定*/
-        FinishedTaskList = response.FinishedTaskList;
-        return Page();
+        // C#で履歴取得するならAPI通信の処理を書く
+        // JSで全部やるなら不要、void OnGetで良い
 
+
+        // API通信:履歴一覧取得依頼
+
+        // レスポンス処理
+
+        // 成功時処理
+
+        /*データ取得を実行するプログラム追加予定*/
+        // FinishedTaskList = response.FinishedTaskList;
+
+        // エラーレスポンス処理
+
+        // 通信異常時エラー画面へ
+
+        // 画面描画
+        return Page();
     }
 
-
+    // メソッド ：履歴更新
     public async Task<IActionResult> OnPostReloadHistoryAsync()
     {
         try
         {
-            var response = new FinishedTaskResponse();
-            /*プルダウンの選択内容POSTのコード追加予定*/
-            /*JSでデータ取得を実行するプログラム追加予定*/
+            // API通信:履歴一覧取得依頼
 
-            // 正常終了(ステータスコード:201)時の処理
+            // レスポンス処理
+            // 正常終了(ステータスコード:200)時の処理
             if (response.statusCode == 200)
             {
-                return new JsonResult(new
-                {
-                    success = true
-                });
+                //return new JsonResult(new
+                //{
+                //    success = true
+                //});
             }
 
-            // 異常終了時の処理
+            // エラーレスポンス処理
             else
             {
-                string ErrorMessage = await HandleApiErrorAsync(response.statusCode);
-                bool success = false;
-                return new JsonResult(new
-                {
-                    success = false,
-                    message = ErrorMessage
-                });
+                //string ErrorMessage = await HandleApiErrorAsync(response.statusCode);
+                //bool success = false;
+                //return new JsonResult(new
+                //{
+                //    success = false,
+                //    message = ErrorMessage
+                //});
             }
+        }
+        catch (HttpRequestException ex)
+        {
+            // 異常ページ表示など
         }
         //サーバからのレスポンスがない場合の処理
         catch
@@ -103,7 +97,7 @@ public class HistoryModel : PageModel
     }
 
 
-
+    // メソッド　：エラーコードを日本語に変換
     public async Task<string> HandleApiErrorAsync(int statusCode)
     {
         string errorCode = "";
@@ -122,4 +116,21 @@ public class HistoryModel : PageModel
         };
 
     }
+}
+
+// APIレスポンスボディ
+public class FinishedTaskResponse
+{
+    public List<FinishedTask> FinishedTaskList { get; set; } = new();
+
+    public int statusCode;
+}
+
+public class FinishedTask
+{
+    public string jobId { get; set; }
+    public string itemCode { get; set; }
+    public string itemName { get; set; }
+    public string status { get; set; }
+    public DateTime completedAt { get; set; }
 }

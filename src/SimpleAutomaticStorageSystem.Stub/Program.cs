@@ -20,7 +20,10 @@ Console.CancelKeyPress += (sender, e) =>
 };
 
 // HTTPクライアント生成
-HttpClient client = new();
+HttpClient client = new()
+{
+    Timeout = TimeSpan.FromSeconds(10),
+};
 string deviceUrl = "http://localhost:8080";
 sysLogger.Info($"HTTPクライアント起動:URL={deviceUrl}");
 
@@ -110,7 +113,7 @@ while (true)
     }
     catch (TaskCanceledException)
     {
-        sysLogger.Warn($"タイムアウト");
+        sysLogger.Warn($"タイムアウト:オンライン通知");
         state.State = RackState.Emergency;
     }
 
@@ -137,7 +140,7 @@ while (true)
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト");
+                sysLogger.Warn($"タイムアウト:アラーム報告");
             }
 
             if (state.State == RackState.Emergency)

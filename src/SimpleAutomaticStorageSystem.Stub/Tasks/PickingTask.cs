@@ -132,7 +132,7 @@ internal class PickingTask
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト");
+                sysLogger.Warn($"タイムアウト:出庫作業報告");
                 actLogger.Info($"出庫異常:JOB番号={job.JobId} 商品ID={job.ItemId}");
                 _state.State = RackState.Emergency;
             }
