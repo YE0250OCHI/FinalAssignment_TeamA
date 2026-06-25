@@ -16,16 +16,16 @@ internal class StoringTask
     private readonly JobManager _manager;
     private readonly ConsoleInput _key;
     private readonly HttpClient _client;
-    private readonly string _deviceUrl;
+    private readonly string _serverUrl;
     private readonly JsonSerializerOptions _options;
 
-    public StoringTask(SystemState state, JobManager manager, ConsoleInput key, HttpClient client, string deviceUrl, JsonSerializerOptions options)
+    public StoringTask(SystemState state, JobManager manager, ConsoleInput key, HttpClient client, string serverUrl, JsonSerializerOptions options)
     {
         _state = state;
         _manager = manager;
         _key = key;
         _client = client;
-        _deviceUrl = deviceUrl;
+        _serverUrl = serverUrl;
         _options = options;
     }
 

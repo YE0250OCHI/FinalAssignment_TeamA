@@ -31,12 +31,12 @@ HttpClient client = new()
 {
     Timeout = TimeSpan.FromSeconds(10),
 };
-string deviceUrl = config["ServerSettings:DeviceUrl"];
-sysLogger.Info($"HTTPクライアント起動:URL={deviceUrl}");
+string serverUrl = config["ServerSettings:ServerUrl"];
+sysLogger.Info($"HTTPクライアント起動:URL={serverUrl}");
 
 // HTTPリスナー生成
 HttpListener listener = new();
-string listenerPrefixes = config["ListenerSettings:DeviceUrl"];
+string listenerPrefixes = config["ListenerSettings:Prefixes"];
 listener.Prefixes.Add(listenerPrefixes);
 
 try
@@ -75,10 +75,10 @@ var manager = new JobManager();
 var key = new ConsoleInput();
 
 var waitPickingReq = new WaitPickingReq(state,manager,listener, options);
-var pollingPicking = new PollingPicking(state,manager,client,deviceUrl,options);
-var waitStoringReq = new WaitStoringReq(state,manager,client,deviceUrl,options);
-var pickingTask = new PickingTask(state,manager,key,client,deviceUrl,options);
-var storingTask = new StoringTask(state,manager,key,client,deviceUrl,options);
+var pollingPicking = new PollingPicking(state,manager,client,serverUrl,options);
+var waitStoringReq = new WaitStoringReq(state,manager,client,serverUrl,options);
+var pickingTask = new PickingTask(state,manager,key,client,serverUrl,options);
+var storingTask = new StoringTask(state,manager,key,client,serverUrl,options);
 
 // 常駐タスク起動
 _ = Task.Run(waitPickingReq.ExecuteAsync);
@@ -97,8 +97,8 @@ while (true)
     // オンライン通知
     try
     {
-        sysLogger.Info($"オンライン通知:IP={deviceUrl}/api/v1/racks/online");
-        var response = await client.PostAsync($"{deviceUrl}/api/v1/racks/online",null);
+        sysLogger.Info($"オンライン通知:IP={serverUrl}/api/v1/racks/online");
+        var response = await client.PostAsync($"{serverUrl}/api/v1/racks/online",null);
 
         if(response.IsSuccessStatusCode)
         {
@@ -137,10 +137,10 @@ while (true)
             Console.WriteLine("装置異常停止中");
             try
             {
-                sysLogger.Info($"アラーム報告:IP={deviceUrl}/api/v1/racks/alarms");
+                sysLogger.Info($"アラーム報告:IP={serverUrl}/api/v1/racks/alarms");
 
                 var alarm = new AlarmBody("EMERGENCY_OFF", DateTime.Now);
-                await client.PostAsJsonAsync($"{deviceUrl}/api/v1/racks/online", alarm,options);
+                await client.PostAsJsonAsync($"{serverUrl}/api/v1/racks/online", alarm,options);
 
             }
             catch (HttpRequestException ex)
