@@ -6,7 +6,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 public interface IItemsRepository
 {
     // =========================
-    //   参照：エンティティ
+    //   参照
     // =========================
 
     /// <summary>
@@ -47,10 +47,17 @@ public interface IItemsRepository
         string itemCode,
         string equipmentId);
 
-
-    // =========================
-    //   参照：マスター
-    // =========================
+    /// <summary>
+    /// 自動倉庫IDを指定して、現在の在庫数を取得する
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <returns>在庫数</returns>
+    Task<int> GetStockCountByEquipmentAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId);
 
     /// <summary>
     /// ItemCodeから、ItemTypeマスターを取り出す
@@ -70,7 +77,7 @@ public interface IItemsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>品種データ</returns>
-    Task<List<ItemTypeModel>> GetItemTypesAsync(
+    Task<IEnumerable<ItemTypeModel>> GetItemTypesAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 
@@ -106,7 +113,8 @@ public interface IItemsRepository
     /// <param name="itemId">商品ID</param>
     /// <param name="currentStatus">現在の保管状態</param>
     /// <param name="nextStatus">次の保管状態</param>
-    Task UpdateItemStatusByIdAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> UpdateItemStatusByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId,
@@ -120,7 +128,8 @@ public interface IItemsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemId">商品ID</param>
     /// <param name="currentStatus">現在の保管状態</param>
-    Task PickItemByIdAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> PickItemByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId);

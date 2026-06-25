@@ -1,9 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
-using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
-using SimpleAutomaticStorageSystem.Server.Shared;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using Microsoft.Extensions.Options;
+using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.Dto;
+using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using System.Net.NetworkInformation;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -32,7 +33,7 @@ public class JobViewer(
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
 
-        // 指定されたjobIdのデータを取る
+        // 指定されたjobIdのデータを参照する
         JobModel job =
             await jobs.GetJobByIdAsync(connection, null, jobId) ??
             throw new JobNotFoundException();
@@ -51,9 +52,8 @@ public class JobViewer(
         await connection.OpenAsync();
 
         // JobModelリストを返却
-        return await jobs.GetIncompleteJobsAsync(
-            connection,
-            null);
+        return [
+            .. await jobs.GetIncompleteJobsByDbAsync(connection, null)];
     }
 
     /// <summary>
@@ -69,8 +69,21 @@ public class JobViewer(
         await connection.OpenAsync();
 
         // JOBリストを取得
-        List<IncompleteJobInfo> jobInfos =
-            await jobs.GetIncompleteJobInfosAsync(connection, null, deviceId);
+        IEnumerable<IncompleteJobRawInfo> rawInfos = 
+            await jobs.GetIncompleteJobRawInfosAsync(connection, null, deviceId);
+
+        // 公開用リストに加工
+        List<IncompleteJobInfo> jobInfos = [
+            .. rawInfos.Select(x =>
+                new IncompleteJobInfo
+                {
+                    JobId = x.JobId,
+                    ItemCode = x.ItemCode,
+                    ItemName = x.ItemName,
+                    Status = ConvertToRequestJobStatus(x.Status),
+                    EquipmentId = x.EquipmentId,
+                    CanCancel = (x.Status is JobStatus.Unassigned)
+                })];
 
         // DTOを組立てリターン
         return new IncompleteJobsResponse
@@ -89,16 +102,29 @@ public class JobViewer(
         string deviceId,
         DateTime? from,
         DateTime? to,
-        SortOrder sort)
+        HistorySortOrder sort)
     {
         // DB接続開始
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
 
         // JOBリストを取得
-        List<HistoryJobInfo> jobInfos =
-            await jobs.GetHistoryJobInfosAsync(
+        IEnumerable<HistoryJobRawInfo> rawInfos =
+            await jobs.GetHistoryJobRawInfosAsync(
                 connection, null, deviceId, from, to, sort);
+
+        // 公開用リストに加工
+        List<HistoryJobInfo> jobInfos = [
+            .. rawInfos.Select(x =>
+                new HistoryJobInfo
+                {
+                    JobId = x.JobId,
+                    ItemCode = x.ItemCode,
+                    ItemName = x.ItemName,
+                    Status = ConvertToRequestJobStatus(x.Status),
+                    EquipmentId = x.EquipmentId,
+                    ClosedAt = x.ClosedAt
+                })];
 
         // DTOを組立てリターン
         return new HistoryJobsResponse
@@ -108,12 +134,32 @@ public class JobViewer(
         };
     }
 
+    // =========================
+    //   プライベートメソッド
+    // =========================
+
+    // JobStatus -> RequestJobStatus への変換
+    private static RequestJobStatus ConvertToRequestJobStatus(
+        JobStatus jobStatus) =>
+            jobStatus switch
+            {
+                JobStatus.Unassigned or
+                JobStatus.Assigned => RequestJobStatus.Waiting,
+                JobStatus.Transferring => RequestJobStatus.Working,
+                JobStatus.WaitOut => RequestJobStatus.WaitOut,
+                JobStatus.Completed => RequestJobStatus.Completed,
+                JobStatus.Canceled => RequestJobStatus.Canceled,
+                JobStatus.Aborted => RequestJobStatus.Aborted,
+                _ => throw new InvalidOperationException(
+                    $"公開用JOB状態に変換できません: {jobStatus}")
+            };
+
 }
 
 /// <summary>
 /// ソート順
 /// </summary>
-public enum SortOrder
+public enum HistorySortOrder
 {
     Latest,
     Oldest

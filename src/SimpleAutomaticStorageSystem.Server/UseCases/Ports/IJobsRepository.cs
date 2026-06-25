@@ -10,7 +10,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 public interface IJobsRepository
 {
     // =========================
-    //   参照：エンティティ
+    //   参照
     // =========================
 
     /// <summary>
@@ -26,28 +26,36 @@ public interface IJobsRepository
         string jobId);
 
     /// <summary>
+    /// JOBをID指定で、ロック付き取得する
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="jobId">JOB番号</param>
+    /// <returns>JobModel</returns>
+    Task<JobModel?> GetJobByIdForUpdateAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string jobId);
+
+    /// <summary>
     /// 未完了JOB一覧を取得する
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>JobModelリスト</returns>
-    Task<List<JobModel>> GetIncompleteJobsAsync(
+    Task<IEnumerable<JobModel>> GetIncompleteJobsByDbAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 
     /// <summary>
-    /// 未割当のJOB一覧を取得する
+    /// 未割当状態のJOB一覧を取得する
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>JobModelリスト</returns>
-    Task<List<JobModel>> GetUnassignedPickingJobsAsync(
+    Task<IEnumerable<JobModel>> GetUnassignedPickingJobsForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
-
-    // =========================
-    //   参照：公開用DTO
-    // =========================
 
     /// <summary>
     /// 指定したスマホIDを依頼元とする、未完了JOB情報のリストを取得
@@ -56,7 +64,7 @@ public interface IJobsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="deviceId">スマホID</param>
     /// <returns></returns>
-    Task<List<IncompleteJobInfo>> GetIncompleteJobInfosAsync(
+    Task<IEnumerable<IncompleteJobRawInfo>> GetIncompleteJobRawInfosAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string deviceId);
@@ -68,13 +76,13 @@ public interface IJobsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="deviceId">スマホID</param>
     /// <returns></returns>
-    Task<List<HistoryJobInfo>> GetHistoryJobInfosAsync(
+    Task<IEnumerable<HistoryJobRawInfo>> GetHistoryJobRawInfosAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string deviceId,
         DateTime? from,
         DateTime? to,
-        SortOrder sort);
+        HistorySortOrder sort);
 
 
     // =========================
@@ -87,21 +95,11 @@ public interface IJobsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="newJob">作成するJOB</param>
-    /// <returns></returns>
-    Task CreateJobAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> CreateJobAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         CreateJobDto newJob);
-
-    /// <summary>
-    /// 最新のJOBを参照し、JOB番号の採番を行う
-    /// </summary>
-    /// <param name="connection">DB接続</param>
-    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
-    /// <returns>新しいJOB番号</returns>
-    Task<string> GenerateJobIdAsync(
-        SqlConnection connection,
-        SqlTransaction? transaction);
 
 
     // =========================
@@ -116,7 +114,8 @@ public interface IJobsRepository
     /// <param name="jobId">JOB番号</param>
     /// <param name="itemId">商品ID</param>
     /// <param name="equipmentId">自動倉庫ID</param>
-    Task AssignJobAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> AssignJobAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string jobId,
@@ -131,13 +130,28 @@ public interface IJobsRepository
     /// <param name="jobId">JOB番号</param>
     /// <param name="currentStatus">現在のJOB状態</param>
     /// <param name="nextStatus">次のJOB状態</param>
-    /// <param name="isClosed">最終状態か</param>
-    /// <returns></returns>
-    Task UpdateJobStatusByIdAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> UpdateJobStatusByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string jobId,
+        JobType jobType,
         JobStatus currentStatus,
         JobStatus nextStatus);
+
+
+    // =========================
+    //   ユーティリティ
+    // =========================
+
+    /// <summary>
+    /// 最新のJOBを参照し、JOB番号の採番を行う
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <returns>新しいJOB番号</returns>
+    Task<string> GenerateJobIdAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction);
 
 }

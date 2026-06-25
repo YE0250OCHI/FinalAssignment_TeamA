@@ -8,6 +8,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobManager(
     IOptions<DatabaseSettings> settings,
+    IOptions<EquipmentSettings> eqSettings,
     ILogger<JobManager> logger,
     IJobsRepository jobs,
     IItemsRepository items,
@@ -56,6 +57,12 @@ public class JobManager(
                 },
             };
 
+    // 自動倉庫の容量
+    private readonly Dictionary<string, int> _capacities =
+        eqSettings.Value.Equipments.ToDictionary(
+            x => x.EquipmentId,
+            x => x.Capacity);
+
 
     // =========================
     //   公開メソッド
@@ -82,9 +89,9 @@ public class JobManager(
 
         try
         {
-            // JobIdが存在するか
+            // JOB番号を指定して、ロック付きでJOBを取得する
             JobModel currentJob =
-                await jobs.GetJobByIdAsync(connection, transaction, jobId) ??
+                await jobs.GetJobByIdForUpdateAsync(connection, transaction, jobId) ??
                 throw new JobNotFoundException();
 
             // 指定された自動倉庫は、JOB割当済みの自動倉庫と同じか
@@ -120,12 +127,20 @@ public class JobManager(
             }
 
             // JOB状態を更新する
-            await jobs.UpdateJobStatusByIdAsync(
+            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
                 connection,
                 transaction,
                 jobId,
+                currentJob.JobType,
                 currentJob.JobStatus,
                 nextJobStatus);
+
+            if (affectedJobRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={nextJobStatus}  AffectedRows={affectedJobRows}");
+            }
+
 
             // 保管状態を更新する
             await items.UpdateItemStatusByIdAsync(
@@ -176,9 +191,9 @@ public class JobManager(
 
         try
         {
-            // JobIdが存在するか
+            // JOB番号を指定して、ロック付きでJOBを取得する
             JobModel currentJob =
-                await jobs.GetJobByIdAsync(connection, transaction, jobId) ??
+                await jobs.GetJobByIdForUpdateAsync(connection, transaction, jobId) ??
                 throw new JobNotFoundException();
 
             // 指定されたスマホは、JOBの依頼送信元と同じか
@@ -191,12 +206,19 @@ public class JobManager(
             }
 
             // JOB状態をキャンセルにする
-            await jobs.UpdateJobStatusByIdAsync(
+            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
                 connection,
                 transaction,
                 jobId,
+                currentJob.JobType,
                 currentJob.JobStatus,
                 JobStatus.Canceled);
+
+            if (affectedJobRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={JobStatus.Canceled}  AffectedRows={affectedJobRows}");
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -245,9 +267,9 @@ public class JobManager(
 
         try
         {
-            // JobIdが存在するか
+            // JOB番号を指定して、ロック付きでJOBを取得する
             JobModel currentJob =
-                await jobs.GetJobByIdAsync(connection, transaction, jobId) ??
+                await jobs.GetJobByIdForUpdateAsync(connection, transaction, jobId) ??
                 throw new JobNotFoundException();
 
             if (currentJob.JobStatus != JobStatus.Unassigned)
@@ -257,12 +279,19 @@ public class JobManager(
             }
 
             // JOBを異常終了させる
-            await jobs.UpdateJobStatusByIdAsync(
+            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
                 connection,
                 transaction,
                 jobId,
+                currentJob.JobType,
                 currentJob.JobStatus,
                 JobStatus.Aborted);
+
+            if (affectedJobRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={JobStatus.Aborted}  AffectedRows={affectedJobRows}");
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -293,15 +322,45 @@ public class JobManager(
     }
 
     /// <summary>
+    /// 自動倉庫の保持JOBを異常終了させ、オンラインにする。
+    /// </summary>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="abortReasonMessage">中断事由</param>
+    /// <returns></returns>
+    public async Task ChangeEquipmentOnlineAsync(
+        string equipmentId, string abortReasonMessage) =>
+        await ChangeEquipmentStateAsync(
+            equipmentId, EquipmentStatus.Online, abortReasonMessage);
+
+    /// <summary>
+    /// 自動倉庫の保持JOBを異常終了させ、オフラインにする。
+    /// </summary>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="abortReasonMessage">中断事由</param>
+    /// <returns></returns>
+    public async Task ChangeEquipmentOfflineAsync(
+        string equipmentId, string abortReasonMessage) =>
+        await ChangeEquipmentStateAsync(
+            equipmentId, EquipmentStatus.Offline, abortReasonMessage);
+
+
+
+    // =========================
+    //   プライベートメソッド
+    // =========================
+
+    /// <summary>
     /// 自動倉庫の保持JOBを異常終了させ、自動倉庫を指定した状態にする。
     /// </summary>
-    /// <param name="equipmentId">対象自動倉庫</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
     /// <param name="nextStatus">次の自動倉庫状態</param>
-    public async Task ChangeEquipmentStatusAsync(
+    /// <param name="abortReasonMessage">中断事由</param>
+    private async Task ChangeEquipmentStateAsync(
         string equipmentId,
         EquipmentStatus nextStatus,
         string abortReasonMessage)
     {
+
         // DB接続開始
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
@@ -313,12 +372,12 @@ public class JobManager(
         try
         {
             // 対象自動倉庫は存在するか
-            EquipmentModel? equipmentModel =
-                await equipments.GetEquipmentByIdAsync(connection, transaction, equipmentId) ??
+            EquipmentModel? currentEquipment =
+                await equipments.GetEquipmentByIdForUpdateAsync(connection, transaction, equipmentId) ??
                 throw new KeyNotFoundException($"自動倉庫ID：{equipmentId}は存在しない。");
 
             // 装置が保持する出庫JOBを取得
-            string? pickingJobId = equipmentModel.PickingJobId;
+            string? pickingJobId = currentEquipment.PickingJobId;
 
             if (pickingJobId is not null)
             {
@@ -332,7 +391,7 @@ public class JobManager(
             }
 
             // 装置が保持する入庫JOBを取得
-            string? putawayJobId = equipmentModel.PutawayJobId;
+            string? putawayJobId = currentEquipment.PutawayJobId;
 
             if (putawayJobId is not null)
             {
@@ -345,13 +404,34 @@ public class JobManager(
                     abortReasonMessage);
             }
 
+            // 空き容量の設定
+            int availableCapacity = nextStatus switch
+            {
+                EquipmentStatus.Online =>
+                    await GetAvailableCapacityAsync(connection, transaction, equipmentId), // オンラインなら更新する
+                EquipmentStatus.Offline =>
+                    currentEquipment.AvailableCapacity, // オフラインでは更新しない
+                _ =>
+                    throw new InvalidOperationException(
+                    $"次の自動倉庫状態が不正 nextStatus={nextStatus}")
+            };
+
             // 装置が保持するJOBを解除し、装置状態を nextStatus にする
-            await equipments.UpdateEquipmentStatusByIdAsync(
-                connection,
-                transaction,
-                equipmentId,
-                equipmentModel.Status,
-                nextStatus);
+            int affectedEquipmentRows =
+                await equipments.UpdateEquipmentByIdAsync(
+                    connection,
+                    transaction,
+                    equipmentId,
+                    availableCapacity,
+                    currentEquipment.Status,
+                    nextStatus);
+
+            // 更新失敗検知
+            if (affectedEquipmentRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"装置状態の更新に失敗。EquipmentId={equipmentId}");
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -375,10 +455,40 @@ public class JobManager(
 
     }
 
+    /// <summary>
+    /// 自動倉庫の空き容量を取得する
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <returns>空き容量</returns>
+    private async Task<int> GetAvailableCapacityAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId)
+    {
+        // 装置の総容量を取得
+        if (!_capacities.TryGetValue(equipmentId, out int total))
+        {
+            throw new InvalidOperationException(
+                $"自動倉庫ID:{equipmentId} の容量設定が存在しません。");
+        }
 
-    // =========================
-    //   プライベートメソッド
-    // =========================
+        int stockCount = 
+            await items.GetStockCountByEquipmentAsync(
+                connection, transaction, equipmentId);
+
+        int availableCapacity = total - stockCount;
+
+        if (availableCapacity < 0)
+        {
+            throw new InvalidOperationException(
+                $"自動倉庫ID:{equipmentId} の在庫数が容量を超えています。");
+        }
+
+        return availableCapacity;
+    }
+
 
     /// <summary>
     /// 出庫JOBの依頼元スマホIDを検証する。
@@ -450,22 +560,21 @@ public class JobManager(
     /// </exception>
     private async Task AbortJobAsync(
         SqlConnection connection,
-        SqlTransaction transaction,
+        SqlTransaction? transaction,
         string equipmentId,
         string jobId,
         string abortReasonMessage)
     {
-
-        // JOB取得
-        JobModel jobModel =
-            await jobs.GetJobByIdAsync(connection, transaction, jobId) ??
+        // JOB番号を指定して、ロック付きでJOBを取得する
+        JobModel currentJob =
+            await jobs.GetJobByIdForUpdateAsync(connection, transaction, jobId) ??
             throw new InvalidOperationException($"DBデータ不正 EquipmentId={equipmentId}");
 
         // 商品を取得
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(jobModel.ItemId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(currentJob.ItemId);
 
         ItemModel itemModel =
-            await items.GetItemByIdAsync(connection, transaction, jobModel.ItemId) ??
+            await items.GetItemByIdAsync(connection, transaction, currentJob.ItemId) ??
             throw new InvalidOperationException($"DBデータが不正です。 JobId={jobId}");
 
         // Itemの保管状態がReservedならば、Storedにする
@@ -475,23 +584,31 @@ public class JobManager(
             await items.UpdateItemStatusByIdAsync(
                 connection,
                 transaction,
-                jobModel.ItemId,
+                currentJob.ItemId,
                 StockStatus.Reserved,
                 StockStatus.Stored);
 
         }
 
         // JOBを異常終了させる
-        await jobs.UpdateJobStatusByIdAsync(
+        int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
             connection,
             transaction,
-            jobModel.JobId,
-            jobModel.JobStatus,
+            currentJob.JobId,
+            currentJob.JobType,
+            currentJob.JobStatus,
             JobStatus.Aborted);
+
+        if (affectedJobRows != 1)
+        {
+            throw new InvalidOperationException(
+                $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={JobStatus.Aborted}  AffectedRows={affectedJobRows}");
+        }
+
 
         logger.LogWarning(
             "JOB異常終了 JobId={JobId} Reason={Reason}",
-            jobModel.JobId,
+            currentJob.JobId,
             abortReasonMessage);
     }
 

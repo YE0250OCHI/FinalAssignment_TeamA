@@ -38,9 +38,9 @@ public class JobAssigner(
 
         try
         {
-            // JobIdが存在するか、なければ存在なし例外スロー
+            // JOB番号を指定して、ロック付きでJOBを取得する
             JobModel currentJob =
-                await jobs.GetJobByIdAsync(connection, transaction, jobId) ??
+                await jobs.GetJobByIdForUpdateAsync(connection, transaction, jobId) ??
                 throw new JobNotFoundException();
 
             // Jobは商品割り当てが可能な状態か、不可なら不正状態例外スロー
@@ -51,7 +51,6 @@ public class JobAssigner(
                 // 割り当てを拒否
                 throw new InvalidStatusException();
             }
-
 
             // 割り当て可能な在庫を取得、なければ割り当てを終了
             ItemModel? availableItem =
@@ -74,31 +73,46 @@ public class JobAssigner(
                 StockStatus.Reserved);
 
             // JOBに商品、自動倉庫を割り当て
-            await jobs.AssignJobAsync(
+            int affectedJobRows = await jobs.AssignJobAsync(
                 connection,
                 transaction,
                 jobId,
                 availableItem.ItemId,
                 equipmentId);
 
+            if ()
+            {
+            }
+
             // 装置状態を更新
+            int affectedEquipmentRows = 0;
             if (currentJob.JobType == JobType.Picking)
             {
                 // 出庫JOB
-                await equipments.AssignPickingJobAsync(
-                    connection,
-                    transaction,
-                    equipmentId,
-                    jobId);
+                affectedEquipmentRows =
+                    await equipments.AssignPickingJobAsync(
+                        connection,
+                        transaction,
+                        equipmentId,
+                        jobId);
             }
             else
             {
                 // 入庫JOB
-                await equipments.AssignPutawayJobAsync(
-                    connection,
-                    transaction,
-                    equipmentId,
-                    jobId);
+                affectedEquipmentRows =
+                    await equipments.AssignPutawayJobAsync(
+                        connection,
+                        transaction,
+                        equipmentId,
+                        jobId);
+            }
+
+            // 更新失敗を検知
+            if (affectedJobRows != 1 ||
+                affectedEquipmentRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB割当に失敗した。JobId={jobId}, ItemId={availableItem.ItemId}, EquipmentId={equipmentId}, AffectedRows={affectedJobRows}");
             }
 
             // コミット
@@ -163,7 +177,7 @@ public class JobAssigner(
         {
             // 対象自動倉庫は存在するか
             EquipmentModel? equipmentModel =
-                await equipments.GetEquipmentByIdAsync(connection, transaction, equipmentId) ??
+                await equipments.GetEquipmentByIdForUpdateAsync(connection, transaction, equipmentId) ??
                 throw new KeyNotFoundException($"自動倉庫ID：{equipmentId}は存在しない。");
 
             // 自動倉庫はJOB割り当てが可能な状態か、不可なら不正状態例外スロー
@@ -175,23 +189,23 @@ public class JobAssigner(
             }
 
             // 未割当JOB一覧を取得
-            List<JobModel> incompleteJobs =
-                await jobs.GetUnassignedPickingJobsAsync(connection, transaction);
+            List<JobModel> incompleteJobs = [
+                .. await jobs.GetUnassignedPickingJobsForUpdateAsync(connection, transaction)];
 
-            // 在庫が存在するJOBを検索し、そのJOB割当可能な在庫を検索する
-            JobModel? jobModel = null;
-            ItemModel? itemModel = null;
+            // 対応可能なJOBを検索し、そのJOB割当可能な在庫を検索する
+            JobModel? targetJob = null;
+            ItemModel? targetItem = null;
 
             foreach (JobModel j in incompleteJobs)
             {
-                itemModel =
+                targetItem =
                     await items.GetPickableItemAsync(
                         connection, transaction, j.ItemCode, equipmentId);
 
-                if(itemModel is not null)
+                if(targetItem is not null)
                 {
                     // 割当可能な商品が見つかった
-                    jobModel = j;
+                    targetJob = j;
 
                     break;
 
@@ -200,7 +214,7 @@ public class JobAssigner(
             }
 
             // なければ、割当可能JOBなしとして終了
-            if (itemModel is null || jobModel is null)
+            if (targetItem is null || targetJob is null)
             {
                 // ロールバック
                 await transaction.RollbackAsync();
@@ -215,30 +229,38 @@ public class JobAssigner(
 
             }
 
-
             // 商品状態を更新
             await items.UpdateItemStatusByIdAsync(
                 connection,
                 transaction,
-                itemModel.ItemId,
-                itemModel.Status,
+                targetItem.ItemId,
+                targetItem.Status,
                 StockStatus.Reserved);
 
             // JOBに商品、自動倉庫を割り当て
-            await jobs.AssignJobAsync(
-                connection,
-                transaction,
-                jobModel.JobId,
-                itemModel.ItemId,
-                equipmentId);
-
+            int affectedJobRows =
+                await jobs.AssignJobAsync(
+                    connection,
+                    transaction,
+                    targetJob.JobId,
+                    targetItem.ItemId,
+                    equipmentId);
 
             // 自動倉庫に出庫JOBを割り当て
-            await equipments.AssignPickingJobAsync(
-                connection,
-                transaction,
-                equipmentId,
-                jobModel.JobId);
+            int affectedEquipmentRows =
+                await equipments.AssignPickingJobAsync(
+                    connection,
+                    transaction,
+                    equipmentId,
+                    targetJob.JobId);
+
+            // 更新失敗を検知
+            if (affectedJobRows != 1 ||
+                affectedEquipmentRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB割当に失敗した。 JobId={targetJob.JobId}, ItemId={targetItem.ItemId}, EquipmentId={equipmentId}, AffectedRows={affectedJobRows}");
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -246,16 +268,16 @@ public class JobAssigner(
             // ログ
             logger.LogInformation(
                 "JOB割当成功 JobId={JobId} ItemId={ItemId} EquipmentId={EquipmentId}",
-                jobModel.JobId,
-                itemModel.ItemId,
+                targetJob.JobId,
+                targetItem.ItemId,
                 equipmentId);
 
             // 割当に成功
             return new()
             {
-                JobId = jobModel.JobId,
-                JobType = jobModel.JobType,
-                ItemId = itemModel.ItemId,
+                JobId = targetJob.JobId,
+                JobType = targetJob.JobType,
+                ItemId = targetItem.ItemId,
                 EquipmentId = equipmentId
             };
 

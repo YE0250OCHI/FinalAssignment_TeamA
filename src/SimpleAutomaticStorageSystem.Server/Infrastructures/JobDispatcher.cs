@@ -73,10 +73,8 @@ public class JobDispatcher(
             try
             {
                 // 相手装置をオフライン化
-                await jobManager.ChangeEquipmentStatusAsync(
-                    jobDto.EquipmentId,
-                    EquipmentStatus.Offline,
-                    "Push送信失敗によるオフライン化");
+                await jobManager.ChangeEquipmentOfflineAsync(
+                    jobDto.EquipmentId, "Push送信失敗によるオフライン化");
             }
             catch (Exception offlineEx)
             {

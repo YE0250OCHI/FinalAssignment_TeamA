@@ -29,6 +29,10 @@ builder.Services.Configure<TimeoutSettings>(
 builder.Services.Configure<HttpSettings>(
     builder.Configuration.GetSection("HttpSettings"));
 
+// HTTP通信設定
+builder.Services.Configure<EquipmentSettings>(
+    builder.Configuration.GetSection("EquipmentSettings"));
+
 // UseCases
 builder.Services.AddScoped<JobIssuer>();
 builder.Services.AddScoped<JobAssigner>();

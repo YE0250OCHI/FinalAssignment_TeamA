@@ -18,7 +18,7 @@ public class HistoryModel(
     public async Task<IActionResult> OnGetAsync(
         DateTime? from,
         DateTime? to,
-        SortOrder sort = SortOrder.Latest)
+        HistorySortOrder sort = HistorySortOrder.Latest)
     {
         // 認可外スマホの場合は拒否
         if (!IsValidDevice(out string? deviceId))
