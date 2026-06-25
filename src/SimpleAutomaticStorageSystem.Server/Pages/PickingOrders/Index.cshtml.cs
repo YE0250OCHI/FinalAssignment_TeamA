@@ -123,7 +123,7 @@ public class IndexModel(
 
 
     // メソッド　：キャンセル依頼
-    public async Task<IActionResult> OnPostCancelAsync(string? jobId)
+    public async Task<IActionResult> OnPostCancelAsync(string? id)
     {
         // 認可外スマホの場合は拒否
         if (!IsValidDevice(out string? deviceId))
@@ -140,13 +140,13 @@ public class IndexModel(
             }
 
             // jobIdがなければエラー
-            if (string.IsNullOrWhiteSpace(jobId))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 throw new InvalidOperationException("JOB番号が指定されていない。");
             }
 
             // 出庫JOBキャンセルを呼出し
-            await jobManager.CancelUnassignedJobAsync(jobId, deviceId);
+            await jobManager.CancelUnassignedJobAsync(id, deviceId);
             
 
             // 正常終了として元に戻る
@@ -174,7 +174,7 @@ public class IndexModel(
             // JobIdが存在しない
             return StatusCode(
                 StatusCodes.Status404NotFound,
-                $"JOB番号:{jobId}は存在しません。");
+                $"JOB番号:{id}は存在しません。");
         }
         catch (Exception ex)
         {
