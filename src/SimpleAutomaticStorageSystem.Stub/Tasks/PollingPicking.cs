@@ -17,15 +17,15 @@ internal class PollingPicking
     private readonly SystemState _state;
     private readonly JobManager _manager;
     private readonly HttpClient _client;
-    private readonly string _deviceUrl;
+    private readonly string _serverUrl;
     private readonly JsonSerializerOptions _options;
 
-    public PollingPicking(SystemState state, JobManager manager, HttpClient client, string deviceUrl, JsonSerializerOptions options)
+    public PollingPicking(SystemState state, JobManager manager, HttpClient client, string serverUrl, JsonSerializerOptions options)
     {
         _state = state;
         _manager = manager;
         _client = client;
-        _deviceUrl = deviceUrl;
+        _serverUrl = serverUrl;
         _options = options;
     }
 
@@ -47,8 +47,8 @@ internal class PollingPicking
 
             try
             {
-                sysLogger.Info($"問合せ送信:URL={_deviceUrl}/api/v1/racks/job");
-                var response = await _client.PostAsync($"{_deviceUrl}/api/v1/racks/job", null);
+                sysLogger.Info($"問合せ送信:URL={_serverUrl}/api/v1/racks/job");
+                var response = await _client.PostAsync($"{_serverUrl}/api/v1/racks/job", null);
 
                 if (!response.IsSuccessStatusCode)
                 {

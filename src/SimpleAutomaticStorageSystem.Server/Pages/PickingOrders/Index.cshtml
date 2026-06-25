@@ -1,91 +1,43 @@
 ﻿@page "/picking-orders/{id?}"
 @model IndexModel
 
-<div class="container my-4" style="max-width: 500px;">
-    <div class="d-flex justify-content-between align-items-center border-bottom border-primary border-2 pb-2 mb-4">
-        <h2 class="text-primary fs-3 fw-bold m-0">出庫依頼</h2>
-        <div class="position-relative">
-            <button id="menuButton"
-                    class="btn btn-outline-primary">
-                ☰
-            </button>
-
-            <div id="menuDropdown"
-                 class="card position-absolute d-none"
-                 style="right:0; top:40px; width:150px; z-index:1000;">
-
-                <a asp-page="/picking-orders" class="dropdown-item p-2">
-                    出庫依頼
-                </a>
-
-                <a asp-page="/picking-orders/history" class="dropdown-item p-2">
-                    履歴
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="card bg-light rounded-4 p-3 mb-4 border-secondary border-opacity-25">
-        <h5 class="fw-bold fs-6 mb-1">出庫依頼新規作成</h5>
-
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-        {
-            <div class="text-danger small mb-2" style="white-space: pre-line;">@Model.ErrorMessage</div>
-        }
-
-        <form method="post" asp-page-handler="AddOrder" class="d-flex gap-2">
-            <select asp-for="SelectedItem" asp-items="@Model.ItemList" class="form-select border-dark shadow-sm" required>
-                <option value="">-- 部品を選択してください --</option>
-            </select>
-            <button type="submit" class="btn btn-primary fw-bold px-3 shadow-sm">追加</button>
-        </form>
-    </div>
-
-    <div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
-        <h5 class="fw-bold fs-6 mb-3">未完了出庫依頼一覧</h5>
-
-        <div class="d-flex flex-column gap-2" id="taskListContainer"></div>
-
-    </div>
-</div>
-
-@if (Model.ErrorMessage is not null)
-{
-    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" id="errorModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-body text-center p-4">
-                    <p class="fw-bold mb-4" style="white-space: pre-line;">@Model.ErrorMessage<br>キャンセル処理に失敗しました。</p>
-                    <a asp-page="./Index" class="btn btn-secondary btn-sm px-4">閉じる</a>
-                </div>
-            </div>
-        </div>
-    </div>
+@{
+	Layout = "_Layout";
 }
 
-@section Scripts {
-    <script>
-        // 3秒(3000ms)おきにバックエンドから最新のHTML一覧部分をフェッチして差し替える
-        setInterval(function () {
-            // 現在のフォーム入力などを邪魔しないよう、一覧エリアだけをリロードします
-            fetch('?handler=FetchTasks')
-                .then(response => {
-                    if (response.ok) return response.text();
-                    else throw new Error('Network error');
-                })
-                .then(html => {
-                    // 取得したHTMLから一覧のコンテナ部分だけを抽出して入れ替え
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newContainer = doc.getElementById('taskListContainer');
-                    if (newContainer) {
-                        document.getElementById('taskListContainer').innerHTML = newContainer.innerHTML;
-                    }
-                })
-                .catch(error => {
-                    // エラー時は仕様書通りエラー画面に遷移させる場合は以下
-                    window.location.href = '/Error';
-                });
-        }, 3000);
-    </script>
+<div class="card bg-light rounded-4 p-3 mb-4 border-secondary border-opacity-25">
+	<h5 class="fw-bold fs-6 mb-1">出庫依頼新規作成</h5>
+
+	@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+	{
+		<div class="text-danger small mb-2" style="white-space: pre-line;">@Model.ErrorMessage</div>
+	}
+
+	<form method="post" asp-page-handler="AddOrder" class="d-flex gap-2">
+		<select asp-for="SelectedItem" asp-items="@Model.ItemList" class="form-select border-dark shadow-sm" required>
+			<option value="">-- 部品を選択してください --</option>
+		</select>
+		<button type="submit" class="btn btn-primary fw-bold px-3 shadow-sm">追加</button>
+	</form>
+</div>
+
+<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
+	<h5 class="fw-bold fs-6 mb-3">未完了出庫依頼一覧</h5>
+	<div class="d-flex flex-column gap-2" id="incompleteTaskListContainer">
+		<!-- 未完了タスクコンテナ -->
+	</div>
+</div>
+
+@if (Model.ShowCancelErrorPopup)
+{
+	<div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" id="errorModal" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered modal-sm">
+			<div class="modal-content">
+				<div class="modal-body text-center p-4">
+					<p class="fw-bold mb-4" style="white-space: pre-line;">@Model.ErrorMessage<br>キャンセル処理に失敗しました。</p>
+					<a asp-page="./Index" class="btn btn-secondary btn-sm px-4">閉じる</a>
+				</div>
+			</div>
+		</div>
+	</div>
 }
