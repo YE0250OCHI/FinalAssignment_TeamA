@@ -1,0 +1,53 @@
+﻿@page "/picking-orders/history"
+@model HistoryModel
+@{
+	Layout = "_Layout";
+}
+</div>
+<div class="sticky-top bg-white border-bottom shadow-sm p-2" style="top: 56px; z-index: 999;">
+	<div class="mb-4">
+		<form method="get">
+			<div class="row g-2 align-items-center mb-2">
+				<div class="col-5">
+					<input type="date" asp-for="completedAt" class="form-control form-control-sm border-dark shadow-sm" />
+				</div>
+				<div class="col-1 text-center">～</div>
+				<div class="col-5">
+					<input type="date" asp-for="taskEndDateTo" class="form-control form-control-sm border-dark shadow-sm" />
+				</div>
+			</div>
+
+			<div class="row g-2 align-items-center mb-3">
+				<div class="col-8">
+					<select asp-for="sort" class="form-select form-select-sm border-dark shadow-sm" onchange="this.form.submit()">
+						<option value="latest">最新</option>
+						<option value="oldest">古い順</option>
+					</select>
+				</div>
+			</div>
+		</form>
+
+		<div class="row g-2 align-items-center mb-3">
+			<div class="col-4 offset-8 text-end">
+				<form method="post" asp-page-handler="ReloadHistory">
+					<button type="submit" class="btn btn-primary btn-sm fw-bold w-100 shadow-sm">更新</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
+	<div class="d-flex flex-column gap-2">
+		<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
+			<div id="finishedTskListContainer" class="d-flex flex-column gap-2">
+				<!-- 終了済みタスクコンテナ -->
+			</div>
+		</div>
+
+		@if (!Model.FinishedTaskList.Any())
+		{
+			<div class="text-center text-secondary py-3 small">対象の履歴はありません。</div>
+		}
+	</div>
+</div>
