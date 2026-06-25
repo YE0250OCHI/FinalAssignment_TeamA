@@ -7,7 +7,7 @@
 |カラム名|型|NOT NULL|キー|説明|
 |:---|:---|:---:|:---:|:---|
 |id|CHAR(14)|○|PK|JOB ID|
-|job_type_id|INT|○|-|JOB種別|
+|job_type|INT|○|-|JOB種別|
 |job_status|INT|○|-|JOB状態|
 |device_id|VARCHAR(10)|-|-|スマホID|
 |item_code|VARCHAR(10)|○|FK|品種番号|
