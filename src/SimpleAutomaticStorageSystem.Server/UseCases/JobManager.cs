@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
@@ -6,22 +7,21 @@ using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobManager(
-    IConfiguration config,
+    IOptions<DatabaseSettings> settings,
     ILogger<JobManager> logger,
     IJobsRepository jobs,
     IItemsRepository items,
     IEquipmentsRepository equipments)
 {
     // DB接続文字列
-    private readonly string _defaultConnection =
-        config.GetConnectionString("DefaultConnection") ?? string.Empty;
+    private readonly string _defaultConnection = settings.Value.DefaultConnection;
 
     // JOB状態遷移マップ
-    private readonly IReadOnlyDictionary<
+    private readonly Dictionary<
         JobType,
-        IReadOnlyDictionary<JobStatus, JobStatus>>
+        Dictionary<JobStatus, JobStatus>>
         _jobStatusTransitionMap =
-            new Dictionary<JobType,IReadOnlyDictionary<JobStatus, JobStatus>>
+            new()
             {
                 [JobType.Picking] = new Dictionary<JobStatus, JobStatus> // 出庫JOBの場合
                 {
@@ -37,11 +37,11 @@ public class JobManager(
             };
 
     // 在庫状態遷移マップ
-    private readonly IReadOnlyDictionary<
+    private readonly Dictionary<
         JobType,
-        IReadOnlyDictionary<JobStatus, StockStatus>>
+        Dictionary<JobStatus, StockStatus>>
         _stockStatusTransitionMap =
-            new Dictionary<JobType, IReadOnlyDictionary<JobStatus, StockStatus>>
+            new()
             {
                 [JobType.Picking] = new Dictionary<JobStatus, StockStatus>
                 {

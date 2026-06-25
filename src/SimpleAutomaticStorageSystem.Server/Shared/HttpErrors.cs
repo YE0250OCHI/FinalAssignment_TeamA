@@ -104,9 +104,17 @@ public sealed class NoCapacityAvailableException()
         "空き容量不足");
 
 /// <summary>
+/// 不正なリクエスト
+/// </summary>
+public sealed class InvalidRequestException()
+    : ApiException(
+        StatusCodes.Status400BadRequest,
+        HttpErrors.INVALID_REQUEST,
+        "不正なリクエスト");
+
+/// <summary>
 /// 不正なクエリ
 /// </summary>
-/// <param name="reason">不正理由</param>
 public sealed class InvalidQueryException()
     : ApiException(
         StatusCodes.Status400BadRequest,
@@ -148,3 +156,14 @@ public sealed class InvalidStatusException()
         StatusCodes.Status409Conflict,
         HttpErrors.INVALID_STATUS,
         "遷移可能な状態ではない");
+
+/// <summary>
+/// 自動倉庫はJOBを実行できない
+/// </summary>
+public sealed class JobCannotDispatchException()
+    : ApiException(
+        StatusCodes.Status409Conflict,
+        HttpErrors.CANNOT_DISPATCH,
+        "自動倉庫はJOBを実行できない。");
+
+

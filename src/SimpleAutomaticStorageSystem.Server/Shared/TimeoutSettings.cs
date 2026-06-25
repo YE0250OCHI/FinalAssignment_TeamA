@@ -15,7 +15,7 @@ public class TimeoutSettings
     /// <summary>
     /// 設定時間リスト
     /// </summary>
-    public required List<JobStatusTimeoutSetting> Timeouts { get; init; }
+    public required IReadOnlyList<JobStatusTimeoutSetting> Timeouts { get; init; }
 }
 
 /// <summary>

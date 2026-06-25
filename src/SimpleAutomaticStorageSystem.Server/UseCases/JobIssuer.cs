@@ -1,21 +1,21 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobIssuer(
-    IConfiguration config,
+    IOptions<DatabaseSettings> settings,
     ILogger<JobIssuer> logger,
     IJobsRepository jobs,
     IItemsRepository items,
     IEquipmentsRepository equipments)
 {
     // DB接続文字列
-    private readonly string _defaultConnection =
-        config.GetConnectionString("DefaultConnection") ?? string.Empty;
+    private readonly string _defaultConnection = settings.Value.DefaultConnection;
 
     // =========================
     //   公開メソッド
@@ -57,7 +57,7 @@ public class JobIssuer(
                 await jobs.GenerateJobIdAsync(connection, transaction);
 
             // JOB作成DTO
-            CreateJobDto newJob = new CreateJobDto
+            CreateJobDto newJob = new()
             {
                 JobId = jobId,
                 JobType = JobType.Putaway,
@@ -93,11 +93,12 @@ public class JobIssuer(
                 equipmentId);
 
             // 割当済みJOBデータを返却
-            return new AssignedJobDto
+            return new()
             {
                 JobId = jobId,
                 JobType = JobType.Putaway,
-                ItemId = itemId
+                ItemId = itemId,
+                EquipmentId = equipmentId
             };
 
         }
@@ -148,7 +149,7 @@ public class JobIssuer(
                 transaction);
 
             // JOB作成DTO
-            CreateJobDto newJob = new CreateJobDto
+            CreateJobDto newJob = new()
             {
                 JobId = jobId,
                 JobType = JobType.Picking,

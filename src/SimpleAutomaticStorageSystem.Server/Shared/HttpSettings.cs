@@ -1,19 +1,24 @@
 ﻿namespace SimpleAutomaticStorageSystem.Server.Shared;
 
 /// <summary>
-/// クライアントの登録情報
+/// Http通信の設定
 /// </summary>
-public class ClientSettings
+public class HttpSettings
 {
+    /// <summary>
+    /// プッシュ送信の応答タイムアウト時間（秒）
+    /// </summary>
+    public required int PushTimeoutSeconds { get; init; }
+
     /// <summary>
     /// スマホ端末設定
     /// </summary>
-    public required List<DeviceSetting> Devices { get; init; }
+    public required IReadOnlyList<DeviceSetting> Devices { get; init; }
 
     /// <summary>
     /// 自動倉庫端末設定
     /// </summary>
-    public required List<EquipmentSetting> Equipments { get; init; }
+    public required IReadOnlyList<EquipmentSetting> Equipments { get; init; }
 }
 
 /// <summary>
@@ -24,12 +29,12 @@ public class DeviceSetting
     /// <summary>
     /// スマホID
     /// </summary>
-    public required string DiveceId { get; init; }
+    public required string DeviceId { get; init; }
 
     /// <summary>
     /// IPアドレス
     /// </summary>
-    public required string IPAddress { get; init; }
+    public required string IpAddress { get; init; }
 }
 
 /// <summary>
@@ -45,5 +50,10 @@ public class EquipmentSetting
     /// <summary>
     /// IPアドレス
     /// </summary>
-    public required string IPAddress { get; init; }
+    public required string IpAddress { get; init; }
+
+    /// <summary>
+    /// ポート番号（Push時に使用）
+    /// </summary>
+    public required int Port { get; init; }
 }

@@ -1,6 +1,6 @@
 ﻿using SimpleAutomaticStorageSystem.Server.Domains;
 
-namespace SimpleAutomaticStorageSystem.Server.UseCases.Dto;
+namespace SimpleAutomaticStorageSystem.Server.Dto;
 
 public class AssignedJobDto
 {
@@ -18,4 +18,9 @@ public class AssignedJobDto
     /// 割り当てられた商品ID
     /// </summary>
     public required string ItemId { get; init; }
+
+    /// <summary>
+    /// 割り当てられた自動倉庫
+    /// </summary>
+    public required string EquipmentId { get; init; }
 }

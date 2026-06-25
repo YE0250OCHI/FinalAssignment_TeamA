@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SimpleAutomaticStorageSystem.Server.Controllers.Dto;
 using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 using System.Text.Json;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
@@ -113,7 +112,13 @@ public class RacksApiController(
                     "API正常応答 StatusCode={StatusCode}",
                     StatusCodes.Status200OK);
 
-                return Ok(jobDto);
+                return Ok(
+                    new
+                    {
+                        jobId = jobDto.JobId,
+                        jobType = jobDto.JobType,
+                        itemId = jobDto.ItemId
+                    });
             }
             else
             {
@@ -394,7 +399,12 @@ public class RacksApiController(
 
             return Created(
                 $"/api/v1/racks/jobs/{jobDto.JobId}",
-                jobDto);
+                new
+                {
+                    jobId = jobDto.JobId,
+                    jobType = jobDto.JobType,
+                    itemId = jobDto.ItemId
+                });
 
         }
         catch (JsonException)

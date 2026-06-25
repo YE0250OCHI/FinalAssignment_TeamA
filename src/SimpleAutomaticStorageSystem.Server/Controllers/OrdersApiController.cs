@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
 

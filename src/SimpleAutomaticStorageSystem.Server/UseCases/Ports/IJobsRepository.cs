@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.UseCases.Dto;
+using SimpleAutomaticStorageSystem.Server.Dto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
@@ -71,7 +71,10 @@ public interface IJobsRepository
     Task<List<HistoryJobInfo>> GetHistoryJobInfosAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
-        string deviceId);
+        string deviceId,
+        DateTime? from,
+        DateTime? to,
+        SortOrder sort);
 
 
     // =========================
