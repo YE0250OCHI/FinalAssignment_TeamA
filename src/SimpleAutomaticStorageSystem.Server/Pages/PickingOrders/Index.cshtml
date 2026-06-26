@@ -41,3 +41,45 @@
 		</div>
 	</div>
 }
+
+
+
+<!-- エラーポップアップ制御 -->
+@if (Model.ErrorMessage == """
+    キャンセル操作はできません。
+    すでに処理が実行中です。
+    """)
+{
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const modal =
+				new bootstrap.Modal(
+					document.getElementById('errorModal'));
+
+			modal.show();
+		});
+	</script>
+}
+<div class="modal fade" id="errorModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h5 class="modal-title">エラー</h5>
+			</div>
+
+			<div class="modal-body">
+				@Model.ErrorMessage
+			</div>
+
+			<div class="modal-footer">
+				<button type="button"
+						class="btn btn-primary"
+						data-bs-dismiss="modal">
+					確認
+				</button>
+			</div>
+
+		</div>
+	</div>
+</div>
