@@ -63,6 +63,7 @@ internal class PollingPicking
                     if(job == null)
                     {
                         sysLogger.Warn("レスポンス不正");
+                        await Task.Delay(5000);
                         continue;
                     }
 
@@ -80,12 +81,12 @@ internal class PollingPicking
             }
             catch (HttpRequestException ex)
             {
-                sysLogger.Warn($"通信エラー：{ex.Message}");
+                sysLogger.Warn($"出庫指示問合せ 通信エラー：{ex.Message}");
                 _state.State = RackState.Emergency;
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト:出庫指示問合せ");
+                sysLogger.Warn($"出庫指示問合せ タイムアウト");
                 _state.State = RackState.Emergency;
             }
 

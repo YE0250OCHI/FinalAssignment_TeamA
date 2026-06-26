@@ -117,12 +117,12 @@ while (true)
     }
     catch (HttpRequestException ex)
     {
-        sysLogger.Warn($"通信エラー：{ex.Message}");
+        sysLogger.Warn($"オンライン通知 通信エラー：{ex.Message}");
         state.State = RackState.Emergency;
     }
     catch (TaskCanceledException)
     {
-        sysLogger.Warn($"タイムアウト:オンライン通知");
+        sysLogger.Warn($"オンライン通知 タイムアウト");
         state.State = RackState.Emergency;
     }
 
@@ -145,11 +145,11 @@ while (true)
             }
             catch (HttpRequestException ex)
             {
-                sysLogger.Warn($"通信エラー：{ex.Message}");
+                sysLogger.Warn($"オンライン通知 通信エラー：{ex.Message}");
             }
             catch (TaskCanceledException)
             {
-                sysLogger.Warn($"タイムアウト:アラーム報告");
+                sysLogger.Warn($"オンライン通知 タイムアウト");
             }
 
             if (state.State == RackState.Emergency)
