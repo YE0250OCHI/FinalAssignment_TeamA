@@ -119,6 +119,28 @@ async function updateTaskList() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const menuButton = document.getElementById('menuButton');
+    const menuDropdown = document.getElementById('menuDropdown');
+
+    if (menuButton && menuDropdown) {
+        menuButton.addEventListener('click', (event) => {
+            // 1. メニューの表示・非表示を切り替える（d-noneのトグル）
+            menuDropdown.classList.toggle('d-none');
+
+            // 2. ボタン以外の場所をクリックしたときに閉じるためのイベントバブリング防止
+            event.stopPropagation();
+        });
+
+        // 【おまけの親切機能】メニューの外側をクリックしたら閉じる処理
+        document.addEventListener('click', (event) => {
+            // クリックされた場所がメニュー自体、またはボタンでなければメニューを閉じる
+            if (!menuDropdown.contains(event.target) && event.target !== menuButton) {
+                menuDropdown.classList.add('d-none');
+            }
+        });
+    }
+});
 
 // async function loadHistory() {
 //     try {
