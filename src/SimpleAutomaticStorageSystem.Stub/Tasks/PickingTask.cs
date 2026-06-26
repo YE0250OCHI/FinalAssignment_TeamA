@@ -3,6 +3,7 @@ using SimpleAutomaticStorageSystem.Stub.Models;
 using SimpleAutomaticStorageSystem.Stub.Tools;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -53,19 +54,18 @@ internal class PickingTask
                 await Task.Delay(100);
                 continue;
             }
+            if (job == null)
+            {
+                sysLogger.Info($"JOB情報不正");
+                _state.State = RackState.Fatal;
+                continue;
+            }
             if (!_state.TryStartPicking())
             {
                 continue;
             }
             try
             {
-                if(job == null)
-                {
-                    sysLogger.Info($"JOB情報不正");
-                    _state.State = RackState.Fatal;
-                    continue;
-                }
-
                 Console.WriteLine($"JOB番号:{job.JobId}");
                 Console.WriteLine($"商品ID:{job.ItemId}");
 
@@ -97,6 +97,12 @@ internal class PickingTask
                     var error = await response.Content.ReadFromJsonAsync<ErrorBody>(_options);
                     sysLogger.Error($"通信異常:{error?.Error ?? "No Content"}");
                     actLogger.Info($"出庫異常終了:JOB番号={job.JobId} 商品ID={job.ItemId}");
+                    if (response.StatusCode == HttpStatusCode.UnprocessableContent)
+                    {
+                        _state.State = RackState.Emergency;
+                        continue;
+                    }
+
                     _state.State = RackState.Fatal;
                     continue;
                 }
@@ -117,6 +123,11 @@ internal class PickingTask
                     var error = await response.Content.ReadFromJsonAsync<ErrorBody>(_options);
                     sysLogger.Error($"通信異常:{error?.Error ?? "No Content"}");
                     actLogger.Info($"取出異常終了:JOB番号={job.JobId} 商品ID={job.ItemId}");
+                    if (response.StatusCode == HttpStatusCode.UnprocessableContent)
+                    {
+                        _state.State = RackState.Emergency;
+                        continue;
+                    }
                     _state.State = RackState.Fatal;
                     continue;
                 }
@@ -139,7 +150,7 @@ internal class PickingTask
             finally
             {
                 Console.SetCursorPosition(0, 1);
-                _state.EndStoring();
+                _state.EndPicking();
             }
 
         }
