@@ -129,11 +129,11 @@ GET /api/v1/picking-orders
 }
 ```
 
-取得成功：履歴がないとき
+取得成功：在庫なし、履歴なし
 ``` json
 {
-  "count": 0,
-  "results": []
+  "available": [],
+  "statuses": []
 }
 ```
 
