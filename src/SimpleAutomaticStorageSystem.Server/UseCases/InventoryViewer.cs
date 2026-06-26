@@ -24,7 +24,8 @@ public class InventoryViewer(
         await connection.OpenAsync();
 
         // item_typesテーブルの中身を取得
-        return await items.GetItemTypesAsync(connection, null);
+        return [
+            .. await items.GetItemTypesAsync(connection, null)];
     }
 
 }

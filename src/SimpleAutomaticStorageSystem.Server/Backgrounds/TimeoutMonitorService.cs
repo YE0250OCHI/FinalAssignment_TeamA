@@ -66,10 +66,8 @@ public class TimeoutMonitorService(
                         if (equipmentId is not null)
                         {
                             // 装置をオフラインにする
-                            await jobManager.ChangeEquipmentStatusAsync(
-                                equipmentId,
-                                EquipmentStatus.Offline,
-                                "タイムアウト");
+                            await jobManager.ChangeEquipmentOfflineAsync(
+                                equipmentId, "タイムアウト");
                         }
                         else
                         {

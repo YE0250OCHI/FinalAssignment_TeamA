@@ -6,7 +6,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 public interface IItemsRepository
 {
     // =========================
-    //   参照：エンティティ
+    //   参照
     // =========================
 
     /// <summary>
@@ -16,19 +16,19 @@ public interface IItemsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemId">商品ID</param>
     /// <returns>ItemModel?</returns>
-    Task<ItemModel?> GetItemByIdAsync(
+    Task<ItemModel?> GetItemByIdForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId);
 
     /// <summary>
-    /// 品種コードを指定し、割り当て可能な在庫を取得する
+    /// 品種コードを指定し、FIFOで割当可能な在庫を取得する
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemCode">品種コード</param>
     /// <returns>割当可能な商品、存在しない場合はnull</returns>
-    Task<ItemModel?> GetAvailableItemAsync(
+    Task<ItemModel?> GetAvailableItemForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode);
@@ -41,25 +41,32 @@ public interface IItemsRepository
     /// <param name="itemCode">品種コード</param>
     /// <param name="equipmentId">自動倉庫ID</param>
     /// <returns>割当可能な在庫</returns>
-    Task<ItemModel?> GetPickableItemAsync(
+    Task<ItemModel?> GetPickableItemForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode,
         string equipmentId);
 
-
-    // =========================
-    //   参照：マスター
-    // =========================
+    /// <summary>
+    /// 自動倉庫IDを指定して、現在の在庫数を取得する
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <returns>在庫数</returns>
+    Task<int> GetStockCountByEquipmentAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId);
 
     /// <summary>
-    /// ItemCodeから、ItemTypeマスターを取り出す
+    /// ItemCodeからItemTypeを探す
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemCode">品種コード</param>
-    /// <returns>品種データ</returns>
-    Task<ItemTypeModel?> GetItemTypeAsync(
+    /// <returns>存在すればture、しなければfalse</returns>
+    Task<bool> AnyItemTypeAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode);
@@ -70,7 +77,7 @@ public interface IItemsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>品種データ</returns>
-    Task<List<ItemTypeModel>> GetItemTypesAsync(
+    Task<IEnumerable<ItemTypeModel>> GetItemTypesAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 
@@ -106,7 +113,8 @@ public interface IItemsRepository
     /// <param name="itemId">商品ID</param>
     /// <param name="currentStatus">現在の保管状態</param>
     /// <param name="nextStatus">次の保管状態</param>
-    Task UpdateItemStatusByIdAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> UpdateItemStatusByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId,
@@ -120,7 +128,8 @@ public interface IItemsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemId">商品ID</param>
     /// <param name="currentStatus">現在の保管状態</param>
-    Task PickItemByIdAsync(
+    /// <returns>影響した行数</returns>
+    Task<int> PickItemByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId);

@@ -37,10 +37,8 @@ public class RacksApiController(
             RacksApiInitialize(HttpContext, out var equipmentId);
 
             // オンライン状態へ移行する
-            await jobManager.ChangeEquipmentStatusAsync(
-                equipmentId,
-                EquipmentStatus.Online,
-                "装置再起動");
+            await jobManager.ChangeEquipmentOnlineAsync(
+                equipmentId, "装置再起動");
 
             logger.LogInformation(
                 "自動倉庫オンライン移行 EquipmentId={EquipmentId}",
@@ -480,10 +478,8 @@ public class RacksApiController(
                 alarmRequest.OccurredAt);
 
             // 装置オフライン化
-            await jobManager.ChangeEquipmentStatusAsync(
-                equipmentId,
-                EquipmentStatus.Offline,
-                "装置アラーム報告");
+            await jobManager.ChangeEquipmentOfflineAsync(
+                equipmentId, "装置アラーム報告");
 
             logger.LogWarning(
                 "自動倉庫オフライン移行 EquipmentId={EquipmentId}",

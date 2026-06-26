@@ -16,9 +16,6 @@ public static class HttpErrors
     // 品種コードが不正
     public const string INVALID_ITEM_CODE = "INVALID_ITEM_CODE";
 
-    // 在庫がない
-    public const string OUT_OF_STOCK = "OUT_OF_STOCK";
-
     // 空き容量がない
     public const string NO_CAPACITY_AVAILABLE = "NO_CAPACITY_AVAILABLE";
 
@@ -84,15 +81,6 @@ public sealed class InvalidItemCodeException()
         StatusCodes.Status422UnprocessableEntity,
         HttpErrors.INVALID_ITEM_CODE,
         "品種コードが不正");
-
-/// <summary>
-/// 在庫がない
-/// </summary>
-public sealed class OutOfStockException() 
-    : ApiException(
-        StatusCodes.Status422UnprocessableEntity,
-        HttpErrors.OUT_OF_STOCK,
-        "出荷可能な在庫がない");
 
 /// <summary>
 /// 空き容量がない

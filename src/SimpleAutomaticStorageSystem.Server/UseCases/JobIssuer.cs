@@ -4,6 +4,7 @@ using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using System.Data;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -34,23 +35,29 @@ public class JobIssuer(
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
 
-        // トランザクション開始
+        // トランザクション開始（SERIALIZABLE有効）
         await using SqlTransaction transaction =
-            (SqlTransaction)await connection.BeginTransactionAsync();
+            (SqlTransaction)await connection.BeginTransactionAsync(
+                IsolationLevel.Serializable);
 
         try
         {
             // 自動倉庫存在確認
-            _ = await equipments.GetEquipmentByIdAsync(connection, transaction, equipmentId) ??
-                throw new InvalidItemCodeException();
+            _ = await equipments.GetEquipmentByIdForUpdateAsync(connection, transaction, equipmentId) ??
+                throw new KeyNotFoundException(
+                    $"自動倉庫ID:{equipmentId}は存在しません。");
 
-            // 品種は正しいか
-            _ = await items.GetItemTypeAsync(connection, transaction, itemCode) ??
+            // 品種コードは存在するか
+            if (!await items.AnyItemTypeAsync(
+                connection, transaction, itemCode))
+            {
                 throw new InvalidItemCodeException();
+            }
 
             // 商品の採番、登録
             string itemId =
-                await items.RegisterItemAsync(connection, transaction, itemCode, equipmentId);
+                await items.RegisterItemAsync(
+                    connection, transaction, itemCode, equipmentId);
 
             // JOB番号採番
             string jobId =
@@ -69,17 +76,27 @@ public class JobIssuer(
             };
 
             // jobsテーブル登録
-            await jobs.CreateJobAsync(
-                connection,
-                transaction,
-                newJob);
+            int affectedJobRows =
+                await jobs.CreateJobAsync(
+                    connection,
+                    transaction,
+                    newJob);
 
             // 自動倉庫の更新
-            await equipments.AssignPutawayJobAsync(
-                connection,
-                transaction,
-                equipmentId,
-                jobId);
+            int affectedEquipmentRows =
+                await equipments.AssignPutawayJobAsync(
+                    connection,
+                    transaction,
+                    equipmentId,
+                    jobId);
+
+            // JOB作成失敗検知
+            if (affectedJobRows != 1 ||
+                affectedEquipmentRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOBまたは装置更新に失敗 JobId={jobId} EquipmentId={equipmentId}");
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -133,15 +150,19 @@ public class JobIssuer(
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
 
-        // トランザクション開始
+        // トランザクション開始（SERIALIZABLE有効）
         await using SqlTransaction transaction =
-            (SqlTransaction)await connection.BeginTransactionAsync();
+            (SqlTransaction)await connection.BeginTransactionAsync(
+                IsolationLevel.Serializable);
 
         try
         {
-            // 品種は正しいか
-            _ = await items.GetItemTypeAsync(connection, transaction, itemCode) ??
+            // 品種コードは存在するか
+            if (!await items.AnyItemTypeAsync(
+                connection, transaction, itemCode))
+            {
                 throw new InvalidItemCodeException();
+            }                
 
             // JOB番号採番
             string jobId = await jobs.GenerateJobIdAsync(
@@ -161,17 +182,23 @@ public class JobIssuer(
             };
 
             // jobsテーブル登録
-            await jobs.CreateJobAsync(
+            int affectedJobRows = await jobs.CreateJobAsync(
                 connection,
                 transaction,
                 newJob);
+
+            if (affectedJobRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"JOB作成に失敗。 JobId={jobId}");
+            }
 
             // コミット
             await transaction.CommitAsync();
 
             // ログ
             logger.LogInformation(
-                "JOB作成成功 JobId={JobId} ItemCode={ItemCode}",
+                "出庫JOB作成成功 JobId={JobId} ItemCode={ItemCode}",
                 jobId,
                 itemCode);
 
