@@ -2,16 +2,16 @@
 
 ### サーバーAPI一覧
 
-|作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|403|404|409|
-|:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|
-|オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|-|-|-|○|-|-|
-|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|○|-|○|
-|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|-|-|○|○|○|
-|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|-|-|○|○|○|
-|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|-|-|○|○|○|
-|入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|○|
-|アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|○|-|-|
+|作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|401|403|404|409|
+|:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|-|○|-|-|
+|オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|○|-|-|-|-|○|-|-|
+|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|-|○|-|○|
+|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|-|-|-|○|○|○|
+|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|-|-|-|○|○|○|
+|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|-|-|-|○|○|○|
+|入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|-|○|-|○|
+|アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|-|○|-|-|
 
 ☆・・・ボディ有無の両方が存在
 
@@ -136,7 +136,7 @@ GET /api/v1/picking-orders
 - WaitOut：商品取出待ち
 - Recovering：異常発生により復旧・再割当処理中
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -169,7 +169,7 @@ POST /api/v1/racks/online
 なし
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -206,7 +206,7 @@ POST /api/v1/racks/job
 なし
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -243,7 +243,7 @@ id : JOB番号（例：J20260616-01）
 }
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -251,6 +251,8 @@ id : JOB番号（例：J20260616-01）
   "error" : "UNREGISTERED_DEVICE"
 }
 ```
+
+#### 403 Forbidden
 
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
@@ -296,7 +298,7 @@ id : JOB番号（例：J20260616-01）
 }
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -304,6 +306,8 @@ id : JOB番号（例：J20260616-01）
   "error" : "UNREGISTERED_DEVICE"
 }
 ```
+
+#### 403 Forbidden
 
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
@@ -349,7 +353,7 @@ id : JOB番号（例：J20260616-01）
 }
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -357,6 +361,8 @@ id : JOB番号（例：J20260616-01）
   "error" : "UNREGISTERED_DEVICE"
 }
 ```
+
+#### 403 Forbidden
 
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
@@ -427,7 +433,7 @@ POST /api/v1/racks/putaway-order
 }
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -479,7 +485,7 @@ POST /api/v1/racks/alarms
 }
 ```
 
-#### 403 Forbidden
+#### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
@@ -539,13 +545,6 @@ POST /api/v1/next-picking-order　　　
 ```
 
 #### 409 Conflict
-
-商品を在庫していない
-``` json
-{
-  "error" : "OUT_OF_STOCK"
-}
-```
 
 指令を受け付けられない
 ``` json
