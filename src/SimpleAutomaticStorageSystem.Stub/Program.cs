@@ -75,11 +75,12 @@ var state = new SystemState();
 var manager = new JobManager();
 var key = new ConsoleInput();
 
-var waitPickingReq = new WaitPickingReq(state,manager,listener, options);
-var pollingPicking = new PollingPicking(state,manager,client,serverUrl,options);
-var waitStoringReq = new WaitStoringReq(state,manager,client,serverUrl,options);
-var pickingTask = new PickingTask(state,manager,key,client,serverUrl,options);
-var storingTask = new StoringTask(state,manager,key,client,serverUrl,options);
+var pollingPicking = new PollingPicking(state, manager, client, serverUrl, options);
+var waitPickingReq = new WaitPickingReq(state, manager, listener, options, pollingPicking);
+var pickingTask = new PickingTask(state, manager, key, client, serverUrl, options, pollingPicking);
+
+var waitStoringReq = new WaitStoringReq(state, manager, client, serverUrl, options);
+var storingTask = new StoringTask(state, manager, key, client, serverUrl, options);
 
 // 常駐タスク起動
 _ = Task.Run(waitPickingReq.ExecuteAsync);
@@ -98,10 +99,12 @@ while (true)
     // オンライン通知
     try
     {
-        sysLogger.Info($"オンライン通知:IP={serverUrl}/api/v1/racks/online");
+        sysLogger.Info($"オンライン通知:URL={serverUrl}/api/v1/racks/online");
         var response = await client.PostAsync($"{serverUrl}/api/v1/racks/online",null);
 
-        if(response.IsSuccessStatusCode)
+        sysLogger.Debug($"オンライン通知 レスポンス受信:{(int)response.StatusCode}");
+
+        if (response.IsSuccessStatusCode)
         {
             sysLogger.Info($"オンライン受理：Status={(int)response.StatusCode}");
             state.State = RackState.Online;
@@ -131,6 +134,16 @@ while (true)
     Console.WriteLine("============ 出庫 ============");
     while (state.State != RackState.Offline)
     {   
+        if(!state.IsPicking && Console.KeyAvailable)
+        {
+            var stop = Console.ReadKey(true);
+
+            if(stop.Key == ConsoleKey.Escape)
+            {
+                state.State = RackState.Emergency;
+            }
+        }
+
         // 異常確認
         if (state.State != RackState.Online)
         {
@@ -138,7 +151,7 @@ while (true)
             Console.WriteLine("装置異常停止中");
             try
             {
-                sysLogger.Info($"アラーム報告:IP={serverUrl}/api/v1/racks/alarms");
+                sysLogger.Info($"アラーム報告:URL={serverUrl}/api/v1/racks/alarms");
 
                 var alarm = new AlarmBody("EMERGENCY_OFF", DateTime.Now);
                 await client.PostAsJsonAsync($"{serverUrl}/api/v1/racks/online", alarm,options);

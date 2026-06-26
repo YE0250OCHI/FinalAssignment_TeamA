@@ -17,13 +17,15 @@ internal class WaitPickingReq
     private readonly JobManager _manager;
     private readonly HttpListener _listener;
     private readonly JsonSerializerOptions _options;
+    private readonly PollingPicking _polling;
 
-    public WaitPickingReq(SystemState state, JobManager manager, HttpListener listener, JsonSerializerOptions options)
+    public WaitPickingReq(SystemState state, JobManager manager, HttpListener listener, JsonSerializerOptions options, PollingPicking polling)
     {
         _state = state;
         _manager = manager;
         _listener = listener;
         _options = options;
+        _polling = polling;
     }
 
     public async Task ExecuteAsync()
@@ -36,6 +38,8 @@ internal class WaitPickingReq
                 await Task.Delay(1000);
                 continue;
             }
+
+            sysLogger.Info($"リスナー起動");
 
             HttpListenerContext context = await _listener.GetContextAsync();
             HttpListenerRequest request = context.Request;
@@ -79,9 +83,11 @@ internal class WaitPickingReq
             try
             {
                 job = JsonSerializer.Deserialize<JobBody>(json,_options);
+                sysLogger.Debug($"リクエスト受信:{job}");
             }
-            catch(JsonException)
+            catch(JsonException ex)
             {
+                sysLogger.Debug($"JSON変換失敗:{ex.Message}");
                 job = null;
             }
 
@@ -121,6 +127,9 @@ internal class WaitPickingReq
                 response.Close();
                 continue;
             }
+
+            _polling.Pause();
+            _polling.CancelCurrentRequest();
 
             response.StatusCode = (int)HttpStatusCode.NoContent;
             sysLogger.Info($"レスポンス送信:Code={response.StatusCode}");
