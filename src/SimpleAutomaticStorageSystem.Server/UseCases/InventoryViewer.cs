@@ -25,7 +25,7 @@ public class InventoryViewer(
 
         // item_typesテーブルの中身を取得
         return [
-            .. await items.GetItemTypesAsync(connection, null)];
+            .. await items.GetPickableItemListAsync(connection, null)];
     }
 
 }

@@ -150,7 +150,7 @@ public class IndexModel(
             
 
             // 正常終了として元に戻る
-            return RedirectToPage(); // GET再実行
+            return RedirectToPage(new { jobId = (string?)null }); // GET再実行
         }
         catch (InvalidStatusException)
         {
@@ -160,7 +160,7 @@ public class IndexModel(
                     すでに処理が実行中です。
                     """;
 
-            return RedirectToPage(); // GET再実行
+            return RedirectToPage(new { jobId = (string?)null }); // GET再実行
         }
         catch (JobAccessDeniedException)
         {

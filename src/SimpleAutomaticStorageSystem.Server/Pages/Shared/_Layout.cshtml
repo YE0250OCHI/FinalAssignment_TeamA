@@ -68,9 +68,17 @@
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 	<script>
-		if ('serviceWorker' in navigator)
-		{
-		navigator.serviceWorker.register('/sw.js');
+		console.log(window.isSecureContext);
+
+		// ブラウザがService Workerに対応しているか確認
+		if ('serviceWorker' in navigator) {
+			console.log('test');
+
+		window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/service-worker.js')
+		.then(reg => console.log('Service Worker 登録成功！Scope: ', reg.scope))
+		.catch(err => console.error('Service Worker 登録失敗...', err));
+		});
 		}
 	</script>
 </body>
