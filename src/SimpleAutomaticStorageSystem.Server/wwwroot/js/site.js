@@ -5,7 +5,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+const updLink = '/api/v1/picking-orders';
+const interval = 5000;
+
+let running = true;
+
 //未完了タスクリスト取得
+const updatePickingOrder = async () => {
+
+    while (running) {
+
+        try {
+
+            //responseに受け取ったデータを格納
+            const response = await fetch(updLink);
+
+            if (!response.ok) {
+                // ok以外のとき
+                throw new Error("Error");
+            }
+
+
+
+        } catch (e) {
+            // エラー表示
+            console.error(e);
+        }
+
+        // ポーリング待機
+        await new Promise(r =>
+            setTimeout(r, interval));
+    }
+}
+
 async function updateTaskList() {
     try {
         //responseに受け取ったデータを格納

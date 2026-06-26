@@ -180,8 +180,8 @@ public class JobAssigner(
             if (equipmentModel.PickingJobId is not null ||
                 equipmentModel.Status != EquipmentStatus.Online)
             {
-                // 割り当てを拒否
-                throw new InvalidStatusException();
+                // すでにJOBを配信済み
+                throw new AlreadyPostedException();
             }
 
             // 未割当JOB一覧を取得

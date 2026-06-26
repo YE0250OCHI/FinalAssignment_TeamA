@@ -64,11 +64,20 @@ builder.Services.AddHostedService<TimeoutMonitorService>();
 // Razor Pages
 builder.Services.AddRazorPages();
 
-// Controllers
-builder.Services.AddControllers();
+// Controllers:Json設定
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+            JsonNamingPolicy.CamelCase;
 
-// Json設定
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
+
+// HttpClient:Json設定
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     // Enumを文字列に変換する
