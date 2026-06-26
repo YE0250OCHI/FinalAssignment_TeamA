@@ -137,15 +137,12 @@ GET /api/v1/picking-orders
 }
 ```
 
-**status補足**
-|状態|説明|
-|:---|:---|
-|Waiting|準備中|
-|Transferring|搬送中|
-|WaitOut|取出待ち|
-|Completed|完了|
-|Canceled|キャンセル|
-|Aborted|異常終了|
+**statuses.status凡例**
+|状態|説明|備考|
+|:---|:---|:---|
+|Waiting|準備中|キャンセル可能|
+|Transferring|搬送中||
+|WaitOut|取出待ち||
 
 #### 401 Unauthorized
 
