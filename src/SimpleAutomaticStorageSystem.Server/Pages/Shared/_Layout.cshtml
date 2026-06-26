@@ -1,18 +1,4 @@
-﻿@{
-    var pageName = ViewContext.RouteData.Values["page"]?.ToString();
-
-    string title = "default page";
-    if (pageName.Contains("picking-orders/history"))
-    {
-        title = "履歴";
-    }
-    else if (pageName.Contains("picking-orders"))
-    {
-        title = "出庫依頼";
-    }
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
     <link rel="manifest" href="/manifest.json">
@@ -51,7 +37,7 @@
                         pb-2">
 
                 <h2 class="text-primary fs-3 fw-bold m-0">
-                    @title
+                    @ViewData["Title"]
                 </h2>
 
                 <div class="dropdown">
