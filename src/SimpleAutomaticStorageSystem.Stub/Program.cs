@@ -13,6 +13,7 @@ var sysLogger = LogManager.GetLogger("Stub.System");
 var actLogger = LogManager.GetLogger("Action.Storage");
 
 sysLogger.Info("アプリケーション起動");
+actLogger.Info("アプリケーション起動");
 
 // Ctrl+C無効化
 Console.CancelKeyPress += (sender, e) =>
