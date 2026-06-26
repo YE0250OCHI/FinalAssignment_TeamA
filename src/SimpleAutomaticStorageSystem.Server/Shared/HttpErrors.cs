@@ -19,6 +19,10 @@ public static class HttpErrors
     // 空き容量がない
     public const string NO_CAPACITY_AVAILABLE = "NO_CAPACITY_AVAILABLE";
 
+    // 遷移可能な状態ではない
+    public const string ALREADY_POSTED = "ALREADY_POSTED";
+
+
     // =========================
     //   システムエラー
     // =========================
@@ -90,6 +94,15 @@ public sealed class NoCapacityAvailableException()
         StatusCodes.Status422UnprocessableEntity,
         HttpErrors.NO_CAPACITY_AVAILABLE,
         "空き容量不足");
+
+/// <summary>
+/// JOB配信済み
+/// </summary>
+public sealed class AlreadyPostedException()
+    : ApiException(
+        StatusCodes.Status422UnprocessableEntity,
+        HttpErrors.ALREADY_POSTED,
+        "JOB配信済み");
 
 /// <summary>
 /// 不正なリクエスト

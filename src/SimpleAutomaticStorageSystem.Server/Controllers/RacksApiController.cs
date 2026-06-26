@@ -99,7 +99,7 @@ public class RacksApiController(
             RacksApiInitialize(HttpContext, out var equipmentId);
 
             // JOBの割当を行う
-            // その自動倉庫は出庫JOBを実行可能な状態ではない -> 409スロー
+            // その自動倉庫は出庫JOBを実行可能な状態ではない -> 422スロー
             AssignedJobDto? jobDto =
                 await jobAssigner.AssignPickingJobForEquipmentAsync(equipmentId);
 
