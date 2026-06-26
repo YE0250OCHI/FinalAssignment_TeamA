@@ -1,7 +1,7 @@
 ﻿console.log("site.js loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateTaskList();
+    updateTaskList()??"";
 });
 
 
@@ -63,66 +63,7 @@ async function updateTaskList() {
         //htmlの更新内容を入れる変数htmlを定義
         let html = '';
 
-        ```javascript
-        container.innerHTML = html;
-
-        // キャンセルボタン押下時はfetchで送信する
-        container.querySelectorAll('form').forEach(form => {
-
-            form.addEventListener('submit', async function (event) {
-
-                event.preventDefault();
-
-                try {
-
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: new FormData(form)
-                    });
-
-                    // 正常終了時は画面更新
-                    if (response.ok || response.redirected) {
-
-                        window.location.href = '/picking-orders';
-                        return;
-                    }
-
-                    // エラーメッセージ取得
-                    const errorMessage = await response.text();
-
-                    // エラー表示領域取得
-                    let errorArea =
-                        document.getElementById('errorMessage');
-
-                    // エラー表示領域が存在しなければ生成
-                    if (!errorArea) {
-
-                        errorArea = document.createElement('div');
-                        errorArea.id = 'errorMessage';
-                        errorArea.className =
-                            'text-danger small mb-2';
-                        errorArea.style.whiteSpace = 'pre-line';
-
-                        const title =
-                            document.querySelector(
-                                '.card h5');
-
-                        title.insertAdjacentElement(
-                            'afterend',
-                            errorArea);
-                    }
-
-                    errorArea.textContent = errorMessage;
-                }
-                catch (error) {
-
-                    console.error(error);
-
-                    window.location.href = '/Error';
-                }
-            });
-        });
-```
+    
 
 
 
