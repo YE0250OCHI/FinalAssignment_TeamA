@@ -4,8 +4,7 @@
 
 |作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|401|403|404|409|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|-|
-|出庫可能リスト取得|スマホ|GET|/api/v1/picking-orders/available|-|-|○|-|-|○|-|-|-|
+|出庫依頼状態|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|-|-|-|-|○|-|-|-|
 |次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/jobs|-|-|☆|-|-|○|-|-|-|
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/jobs/{id}/initiate|-|-|-|○|-|○|○|○|-|
@@ -71,16 +70,29 @@ GET /api/v1/picking-orders
 取得成功：作業途中のJOB一覧
 ``` json
 {
-  "count": 6,
-  "results": [
+  "available": [
     {
-      "jobId": "J20260616-49",
-      "itemCode": "I02",
-      "itemName": "部品B",
-      "status": "Recovering",
-      "equipmentId": null,
-      "canCancel": true
+      "itemCode": "I01",
+      "itemName": "部品A",
+      "stockCount": 9
     },
+    {
+      "itemCode": "I03",
+      "itemName": "部品C",
+      "stockCount": 2
+    },
+    {
+      "itemCode": "I04",
+      "itemName": "部品D",
+      "stockCount": 6
+    },
+    {
+      "itemCode": "I05",
+      "itemName": "部品E",
+      "stockCount": 11
+    }
+  ],
+  "statuses": [
     {
       "jobId": "J20260616-50",
       "itemCode": "I01",
@@ -93,7 +105,7 @@ GET /api/v1/picking-orders
       "jobId": "J20260616-51",
       "itemCode": "I01",
       "itemName": "部品A",
-      "status": "Working",
+      "status": "Transferring",
       "equipmentId": "AS03",
       "canCancel": false
     },
@@ -101,16 +113,8 @@ GET /api/v1/picking-orders
       "jobId": "J20260616-52",
       "itemCode": "I01",
       "itemName": "部品A",
-      "status": "Waiting",
+      "status": "Transferring",
       "equipmentId": "AS04",
-      "canCancel": true
-    },
-    {
-      "jobId": "J20260616-53",
-      "itemCode": "I03",
-      "itemName": "部品C",
-      "status": "Waiting",
-      "equipmentId": "AS05",
       "canCancel": true
     },
     {
@@ -152,59 +156,7 @@ GET /api/v1/picking-orders
 }
 ```
 
-## 未完了出庫依頼取得
-
-### リクエスト
-
-``` http
-GET /api/v1/picking-orders/available
-```
-
-### レスポンス
-
-#### 200 OK
-
-取得成功：出庫可能な商品の一覧
-``` json
-{
-  "count": 0,
-  "items": [
-    {
-      "itemCode": "I01",
-      "itemName": "部品A"
-    },
-    {
-      "itemCode": "I02",
-      "itemName": "部品B"
-    },
-    {
-      "itemCode": "I03",
-      "itemName": "部品C"
-    },
-    {
-      "itemCode": "I04",
-      "itemName": "部品D"
-    }
-  ]
-}
-```
-
-取得成功：出庫可能な商品がないとき
-``` json
-{
-  "count": 0,
-  "items": []
-}
-```
-
-#### 401 Unauthorized
-
-未登録の端末からの要求
-``` json
-{
-  "error": "UNREGISTERED_DEVICE"
-}
-```
+***
 
 ## オンライン要求
 
