@@ -44,11 +44,15 @@ public class JobIssuer(
         {
             // 自動倉庫存在確認
             _ = await equipments.GetEquipmentByIdForUpdateAsync(connection, transaction, equipmentId) ??
-                throw new InvalidItemCodeException();
+                throw new KeyNotFoundException(
+                    $"自動倉庫ID:{equipmentId}は存在しません。");
 
-            // 品種は正しいか
-            _ = await items.GetItemTypeAsync(connection, transaction, itemCode) ??
+            // 品種コードは存在するか
+            if (!await items.AnyItemTypeAsync(
+                connection, transaction, itemCode))
+            {
                 throw new InvalidItemCodeException();
+            }
 
             // 商品の採番、登録
             string itemId =
@@ -91,7 +95,7 @@ public class JobIssuer(
                 affectedEquipmentRows != 1)
             {
                 throw new InvalidOperationException(
-                    $"JOB作成に失敗。 JobId={jobId}");
+                    $"JOBまたは装置更新に失敗 JobId={jobId} EquipmentId={equipmentId}");
             }
 
             // コミット
@@ -153,9 +157,12 @@ public class JobIssuer(
 
         try
         {
-            // 品種は正しいか
-            _ = await items.GetItemTypeAsync(connection, transaction, itemCode) ??
+            // 品種コードは存在するか
+            if (!await items.AnyItemTypeAsync(
+                connection, transaction, itemCode))
+            {
                 throw new InvalidItemCodeException();
+            }                
 
             // JOB番号採番
             string jobId = await jobs.GenerateJobIdAsync(
@@ -191,7 +198,7 @@ public class JobIssuer(
 
             // ログ
             logger.LogInformation(
-                "JOB作成成功 JobId={JobId} ItemCode={ItemCode}",
+                "出庫JOB作成成功 JobId={JobId} ItemCode={ItemCode}",
                 jobId,
                 itemCode);
 

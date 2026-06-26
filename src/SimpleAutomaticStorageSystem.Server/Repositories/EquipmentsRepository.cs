@@ -44,13 +44,22 @@ public class EquipmentsRepository:IEquipmentsRepository
     /// <inheritdoc/>
     public Task<int> AssignPickingJobAsync(
         SqlConnection connection, SqlTransaction? transaction, string equipmentId, string pickingJobId) =>
-        AssignJobAsync(connection, transaction, equipmentId, pickingJobId, JobType.Picking);
+            AssignJobAsync(connection, transaction, equipmentId, pickingJobId, JobType.Picking);
+
+    /// <inheritdoc/>
+    public Task<int> ReleasePickingJobAsync(
+        SqlConnection connection, SqlTransaction? transaction, string equipmentId, string pickingJobId) =>
+            ReleaseJobAsync(connection, transaction, equipmentId, pickingJobId, JobType.Picking);
 
     /// <inheritdoc/>
     public Task<int> AssignPutawayJobAsync(
         SqlConnection connection, SqlTransaction? transaction, string equipmentId, string putawayJobId) =>
-        AssignJobAsync(connection, transaction, equipmentId, putawayJobId, JobType.Putaway);
-
+            AssignJobAsync(connection, transaction, equipmentId, putawayJobId, JobType.Putaway);
+    
+    /// <inheritdoc/>
+    public Task<int> ReleasePutawayJobAsync(
+        SqlConnection connection, SqlTransaction? transaction, string equipmentId, string putawayJobId) =>
+            ReleaseJobAsync(connection, transaction, equipmentId, putawayJobId, JobType.Putaway);
 
     /// <inheritdoc/>
     public Task<int> UpdateEquipmentByIdAsync(
@@ -92,7 +101,7 @@ public class EquipmentsRepository:IEquipmentsRepository
     //   プライベートメソッド
     // =========================
 
-    // 自動倉庫へJOB番号を割り当てる
+    // 自動倉庫へJOBを割り当てる
     private static Task<int> AssignJobAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
@@ -126,6 +135,44 @@ public class EquipmentsRepository:IEquipmentsRepository
                 jobId,
                 equipmentId,
                 Online = EquipmentStatus.Online
+            },
+            transaction: transaction);
+    }
+
+    // 自動倉庫のJOB割当を解除する
+    private static Task<int> ReleaseJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId,
+        string jobId,
+        JobType jobType)
+    {
+        string targetCol = jobType switch
+        {
+            JobType.Picking => "picking_job_id",
+            JobType.Putaway => "putaway_job_id",
+            _ => throw new InvalidOperationException(
+                $"JOB種別が不正 JobType:{jobType}")
+        };
+
+        string sql = $"""
+            UPDATE
+                equipments
+            SET
+                {targetCol} = NULL
+            WHERE
+                id = @equipmentId
+                AND equipment_status = @Online
+                AND {targetCol} = @jobId
+            """;
+
+        return connection.ExecuteAsync(
+            sql,
+            new
+            {
+                equipmentId,
+                Online = EquipmentStatus.Online,
+                jobId,
             },
             transaction: transaction);
     }

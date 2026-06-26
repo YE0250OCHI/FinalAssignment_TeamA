@@ -31,8 +31,9 @@ public record ItemTypeModel(
 /// </summary>
 public enum StockStatus
 {
-    None, // 管理対象外になった
     Stored, // 保管中
     Reserved, // 割当が実行された
-    Transferring // 搬送中
+    Transferring, // 搬送中
+    Picked, // 出庫済み
+    OutOfControl // 管理対象外
 }

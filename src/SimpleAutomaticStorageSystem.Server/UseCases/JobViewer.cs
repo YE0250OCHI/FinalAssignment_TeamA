@@ -4,7 +4,6 @@ using SimpleAutomaticStorageSystem.Server.Domains;
 using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
-using System.Net.NetworkInformation;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -53,7 +52,7 @@ public class JobViewer(
 
         // JobModelリストを返却
         return [
-            .. await jobs.GetIncompleteJobsByDbAsync(connection, null)];
+            .. await jobs.GetIncompleteJobModelsAsync(connection, null)];
     }
 
     /// <summary>

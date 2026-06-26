@@ -43,7 +43,7 @@ public interface IJobsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>JobModelリスト</returns>
-    Task<IEnumerable<JobModel>> GetIncompleteJobsByDbAsync(
+    Task<IEnumerable<JobModel>> GetIncompleteJobModelsAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 
@@ -128,10 +128,29 @@ public interface IJobsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="jobId">JOB番号</param>
+    /// <param name="jobType">JOB種別</param>
     /// <param name="currentStatus">現在のJOB状態</param>
     /// <param name="nextStatus">次のJOB状態</param>
     /// <returns>影響した行数</returns>
     Task<int> UpdateJobStatusByIdAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string jobId,
+        JobType jobType,
+        JobStatus currentStatus,
+        JobStatus nextStatus);
+
+    /// <summary>
+    /// JOBの状態遷移
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="jobId">JOB番号</param>
+    /// <param name="jobType">JOB種別</param>
+    /// <param name="currentStatus">現在のJOB状態</param>
+    /// <param name="nextStatus">次のJOB状態</param>
+    /// <returns>影響した行数</returns>
+    Task<int> CloseJobByIdAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string jobId,

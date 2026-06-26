@@ -26,12 +26,14 @@ public class JobManager(
             {
                 [JobType.Picking] = new Dictionary<JobStatus, JobStatus> // 出庫JOBの場合
                 {
+                    // 現在JOB状態 = 次JOB状態
                     [JobStatus.Assigned] = JobStatus.Transferring, // 割当済み→搬送中
                     [JobStatus.Transferring] = JobStatus.WaitOut, // 搬送中→取出待ち
                     [JobStatus.WaitOut] = JobStatus.Completed, // 取出待ち→完了
                 },
                 [JobType.Putaway] = new Dictionary<JobStatus, JobStatus> // 入庫JOBの場合
                 {
+                    // 現在JOB状態 = 次JOB状態
                     [JobStatus.Assigned] = JobStatus.Transferring, // 割当済み→搬送中
                     [JobStatus.Transferring] = JobStatus.Completed, // 搬送中→完了
                 }
@@ -46,12 +48,14 @@ public class JobManager(
             {
                 [JobType.Picking] = new Dictionary<JobStatus, StockStatus>
                 {
+                    // 次JOB状態 = 次保管状態
                     [JobStatus.Transferring] = StockStatus.Transferring, // 搬送中→搬送中
-                    [JobStatus.WaitOut] = StockStatus.None, // 取出待ち→管理外
-                    [JobStatus.Completed] = StockStatus.None // 完了→管理外
+                    [JobStatus.WaitOut] = StockStatus.Transferring, // 取出待ち→搬送中
+                    [JobStatus.Completed] = StockStatus.Picked // 完了→出庫済み
                 },
                 [JobType.Putaway] = new Dictionary<JobStatus, StockStatus>
                 {
+                    // 次JOB状態 = 次保管状態
                     [JobStatus.Transferring] = StockStatus.Transferring, // 搬送中→搬送中
                     [JobStatus.Completed] = StockStatus.Stored // 完了→保管中
                 },
@@ -113,8 +117,8 @@ public class JobManager(
                     $"商品IDが設定されていない。 JobId={jobId}");
 
             // 商品を取得
-            ItemModel itemModel =
-                await items.GetItemByIdAsync(connection, transaction, itemId) ??
+            ItemModel assignedItem =
+                await items.GetItemByIdForUpdateAsync(connection, transaction, itemId) ??
                 throw new KeyNotFoundException(
                     $"商品ID：{itemId}は存在しない。");
 
@@ -127,28 +131,82 @@ public class JobManager(
             }
 
             // JOB状態を更新する
-            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
-                connection,
-                transaction,
-                jobId,
-                currentJob.JobType,
-                currentJob.JobStatus,
-                nextJobStatus);
+            int affectedJobRows = nextJobStatus switch
+            {
+                // 次JOB状態が搬送中または取出待ちならば、JOB状態と遷移日時のみ更新する
+                JobStatus.Transferring or
+                JobStatus.WaitOut =>
+                    await jobs.UpdateJobStatusByIdAsync(
+                        connection,
+                        transaction,
+                        jobId,
+                        currentJob.JobType,
+                        currentJob.JobStatus,
+                        nextJobStatus),
+                // 次JOB状態が完了ならば、JOB状態と遷移日時、終了日時を更新する
+                JobStatus.Completed =>
+                    await jobs.CloseJobByIdAsync(
+                        connection,
+                        transaction,
+                        jobId,
+                        currentJob.JobType,
+                        currentJob.JobStatus,
+                        nextJobStatus),
+                // それ以外は例外
+                _ => throw new InvalidOperationException(
+                        $"次JOB状態が不正。JobId={jobId} NextJobStatus={nextJobStatus}")
+            };
 
             if (affectedJobRows != 1)
             {
                 throw new InvalidOperationException(
-                    $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={nextJobStatus}  AffectedRows={affectedJobRows}");
+                    $"JOB状態更新に失敗しました。JobId={jobId} CurrentStatus={currentJob.JobStatus} NextStatus={nextJobStatus} AffectedRows={affectedJobRows}");
             }
 
-
             // 保管状態を更新する
-            await items.UpdateItemStatusByIdAsync(
-                connection,
-                transaction,
-                itemId,
-                itemModel.Status,
-                nextItemStatus);
+            int affectedItemRows = nextItemStatus switch
+            {
+                // 次保管状態が搬送中または保管中ならば、保管状態のみ更新する
+                StockStatus.Transferring or
+                StockStatus.Stored =>
+                    await items.UpdateItemStatusByIdAsync(
+                        connection, transaction, itemId, assignedItem.Status, nextItemStatus),
+                // 次保管状態が出庫済みならば、保管状態と出庫日時を更新する
+                StockStatus.Picked =>
+                    await items.PickItemByIdAsync(
+                        connection, transaction, itemId),
+                // それ以外は例外スロー
+                _ => throw new InvalidOperationException(
+                        $"次保管状態が不正。ItemId={itemId} NextStockStatus={nextItemStatus}")
+            };
+
+            if (affectedItemRows != 1)
+            {
+                throw new InvalidOperationException(
+                    $"商品の状態更新に失敗しました。 ItemId={assignedItem.ItemId}  CurrentStatus={assignedItem.Status}  NextStatus={nextItemStatus}  AffectedRows={affectedItemRows}");
+            }
+
+            // 次JOB状態が完了ならば、装置が保持するJOBを解除する
+            if (nextJobStatus is JobStatus.Completed)
+            {
+                int affectedEquipmentRows = currentJob.JobType switch
+                {
+                    JobType.Picking =>
+                        await equipments.ReleasePickingJobAsync(
+                            connection, transaction, equipmentId, jobId),
+                    JobType.Putaway =>
+                        await equipments.ReleasePutawayJobAsync(
+                            connection, transaction, equipmentId, jobId),
+                    _ => throw new InvalidOperationException(
+                        $"JOB種別が不正。JobID={jobId} JobType={currentJob.JobType}")
+                };
+
+                if (affectedEquipmentRows != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"装置状態更新に失敗しました。EquipmentId={equipmentId} AffectedRows={affectedEquipmentRows}");
+                }
+            }
 
             // コミット
             await transaction.CommitAsync();
@@ -201,18 +259,19 @@ public class JobManager(
 
             if(currentJob.JobStatus != JobStatus.Unassigned)
             {
-                // Unssignedでなければ、キャンセルを拒否する
+                // Unassignedでなければ、キャンセルを拒否する
                 throw new InvalidStatusException();
             }
 
             // JOB状態をキャンセルにする
-            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
-                connection,
-                transaction,
-                jobId,
-                currentJob.JobType,
-                currentJob.JobStatus,
-                JobStatus.Canceled);
+            int affectedJobRows =
+                await jobs.CloseJobByIdAsync(
+                    connection,
+                    transaction,
+                    jobId,
+                    currentJob.JobType,
+                    currentJob.JobStatus,
+                    JobStatus.Canceled);
 
             if (affectedJobRows != 1)
             {
@@ -279,13 +338,14 @@ public class JobManager(
             }
 
             // JOBを異常終了させる
-            int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
-                connection,
-                transaction,
-                jobId,
-                currentJob.JobType,
-                currentJob.JobStatus,
-                JobStatus.Aborted);
+            int affectedJobRows =
+                await jobs.CloseJobByIdAsync(
+                    connection,
+                    transaction,
+                    jobId,
+                    currentJob.JobType,
+                    currentJob.JobStatus,
+                    JobStatus.Aborted);
 
             if (affectedJobRows != 1)
             {
@@ -349,12 +409,7 @@ public class JobManager(
     //   プライベートメソッド
     // =========================
 
-    /// <summary>
-    /// 自動倉庫の保持JOBを異常終了させ、自動倉庫を指定した状態にする。
-    /// </summary>
-    /// <param name="equipmentId">自動倉庫ID</param>
-    /// <param name="nextStatus">次の自動倉庫状態</param>
-    /// <param name="abortReasonMessage">中断事由</param>
+    // JOBを異常終了させた後、自動倉庫を指定した状態にする。
     private async Task ChangeEquipmentStateAsync(
         string equipmentId,
         EquipmentStatus nextStatus,
@@ -435,6 +490,26 @@ public class JobManager(
 
             // コミット
             await transaction.CommitAsync();
+
+
+            // ログ処理
+            if (pickingJobId is not null)
+            {
+                logger.LogWarning(
+                    "JOB異常終了 JobId={JobId} EquipmentId={EquipmentId} Reason={Reason}",
+                    pickingJobId,
+                    equipmentId,
+                    abortReasonMessage);
+            }
+
+            if (putawayJobId is not null)
+            {
+                logger.LogWarning(
+                    "JOB異常終了 JobId={JobId} EquipmentId={EquipmentId} Reason={Reason}",
+                    putawayJobId,
+                    equipmentId,
+                    abortReasonMessage);
+            }
 
         }
         catch
@@ -573,43 +648,57 @@ public class JobManager(
         // 商品を取得
         ArgumentNullException.ThrowIfNullOrWhiteSpace(currentJob.ItemId);
 
-        ItemModel itemModel =
-            await items.GetItemByIdAsync(connection, transaction, currentJob.ItemId) ??
+        ItemModel assignedItem =
+            await items.GetItemByIdForUpdateAsync(connection, transaction, currentJob.ItemId) ??
             throw new InvalidOperationException($"DBデータが不正です。 JobId={jobId}");
 
-        // Itemの保管状態がReservedならば、Storedにする
-        if (itemModel.Status == StockStatus.Reserved)
+        // 商品状態を更新
+        int affectedItemRows = assignedItem.Status switch
         {
-            // 商品状態を更新
-            await items.UpdateItemStatusByIdAsync(
-                connection,
-                transaction,
-                currentJob.ItemId,
-                StockStatus.Reserved,
-                StockStatus.Stored);
+            // 商品は棚に残っているので、保管中へ戻す
+            StockStatus.Reserved =>
+                await items.UpdateItemStatusByIdAsync(
+                        connection,
+                        transaction,
+                        currentJob.ItemId,
+                        StockStatus.Reserved,
+                        StockStatus.Stored),
 
+            // 商品は棚から搬送されたので、管理対象外とする
+            StockStatus.Transferring =>
+                await items.UpdateItemStatusByIdAsync(
+                        connection,
+                        transaction,
+                        currentJob.ItemId,
+                        StockStatus.Transferring,
+                        StockStatus.OutOfControl),
+
+            // それ以外は状態不整合
+            _ => throw new InvalidOperationException(
+                    $"商品の状態が不正です。ItemId={assignedItem.ItemId} Status={assignedItem.Status}")
+        };
+
+        if (affectedItemRows != 1)
+        {
+            throw new InvalidOperationException(
+                $"商品の状態更新に失敗しました。ItemId={assignedItem.ItemId} CurrentStatus={assignedItem.Status} AffectedRows={affectedItemRows}");
         }
 
         // JOBを異常終了させる
-        int affectedJobRows = await jobs.UpdateJobStatusByIdAsync(
-            connection,
-            transaction,
-            currentJob.JobId,
-            currentJob.JobType,
-            currentJob.JobStatus,
-            JobStatus.Aborted);
+        int affectedJobRows =
+            await jobs.CloseJobByIdAsync(
+                connection,
+                transaction,
+                currentJob.JobId,
+                currentJob.JobType,
+                currentJob.JobStatus,
+                JobStatus.Aborted);
 
         if (affectedJobRows != 1)
         {
             throw new InvalidOperationException(
                 $"JOB状態更新に失敗しました。 JobId={jobId}  CurrentStatus={currentJob.JobStatus}  NextStatus={JobStatus.Aborted}  AffectedRows={affectedJobRows}");
         }
-
-
-        logger.LogWarning(
-            "JOB異常終了 JobId={JobId} Reason={Reason}",
-            currentJob.JobId,
-            abortReasonMessage);
     }
 
 }

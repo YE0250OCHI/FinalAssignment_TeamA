@@ -50,7 +50,7 @@ public class JobsRepository: IJobsRepository
         GetJobByIdInternalAsync(connection, transaction, jobId, true);
 
     /// <inheritdoc/>
-    public Task<IEnumerable<JobModel>> GetIncompleteJobsByDbAsync(
+    public Task<IEnumerable<JobModel>> GetIncompleteJobModelsAsync(
         SqlConnection connection,
         SqlTransaction? transaction)
     {
@@ -344,62 +344,33 @@ public class JobsRepository: IJobsRepository
         string jobId,
         JobType jobType,
         JobStatus currentStatus,
-        JobStatus nextStatus)
-    {
-        // 更新するカラム
-        string targetCol = _timestampColumnMap[jobType][nextStatus];
-
-        bool isClosed =
-            nextStatus is
-            JobStatus.Completed or
-            JobStatus.Canceled or
-            JobStatus.Aborted;
-        
-        const string baseSql = """
-            UPDATE jobs
-            SET
-                job_status = @nextStatus,
-            """;
-
-        const string whereSql = """
-            WHERE
-                id = @jobId
-                AND job_status = @currentStatus
-            """;
-
-        // SQL組立
-        StringBuilder sb = new();
-        sb.AppendLine(baseSql);
-
-        sb.AppendLine($", {targetCol} = GETDATE()");
-
-        // 遷移後が終了系ステータスの場合、closed_at も更新する
-        if (isClosed)
-        {
-            sb.AppendLine($", closed_at = GETDATE()");
-        }
-
-        sb.AppendLine(whereSql);
-
-        sb.AppendLine($"AND {targetCol} IS NULL");
-
-        // 完了済みJOBの再更新を防止する
-        if (isClosed)
-        {
-            sb.AppendLine($"AND closed_at IS NULL");
-        }
-
-        return connection.ExecuteAsync(
-            sb.ToString(),
-            new
-            {
-                nextStatus,
+        JobStatus nextStatus) =>
+            UpdateJobStatusInternalAsync(
+                connection,
+                transaction,
                 jobId,
-                currentStatus
-            },
-            transaction: transaction);
+                jobType,
+                currentStatus,
+                nextStatus,
+                isClosed: false);
 
-    }
+
+    /// <inheritdoc/>
+    public Task<int> CloseJobByIdAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string jobId,
+        JobType jobType,
+        JobStatus currentStatus,
+        JobStatus nextStatus) => 
+            UpdateJobStatusInternalAsync(
+                connection,
+                transaction,
+                jobId,
+                jobType,
+                currentStatus,
+                nextStatus,
+                isClosed: true);
 
 
     // =========================
@@ -422,11 +393,12 @@ public class JobsRepository: IJobsRepository
                 j.created_at >= @Today
                 AND j.created_at < @Tomorrow
             ORDER BY
+                j.created_at DESC,
                 j.id DESC
             """;
 
         string? latestJobId =
-            await connection.QuerySingleOrDefaultAsync<string>(
+            await connection.ExecuteScalarAsync<string?>(
                 sql,
                 new
                 {
@@ -443,11 +415,15 @@ public class JobsRepository: IJobsRepository
 
         string[] parts = latestJobId.Split('-');
 
-        string header = parts[0];
         int sequence = int.Parse(parts[1]) + 1;
+        if (sequence > 99)
+        {
+            throw new InvalidOperationException(
+                "JOB番号の連番が上限に達しました。");
+        }
 
         // 最新連番+1を返す
-        return $"{header}-{sequence:00}";
+        return $"{parts[0]}-{sequence:00}";
     }
 
 
@@ -494,4 +470,73 @@ public class JobsRepository: IJobsRepository
             transaction);
     }
 
+    // JOB状態の更新
+    private Task<int> UpdateJobStatusInternalAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string jobId,
+        JobType jobType,
+        JobStatus currentStatus,
+        JobStatus nextStatus,
+        bool isClosed)
+    {
+        // 次JOB状態の正当性チェック（終了系のみ）
+        if (isClosed)
+        {
+            if (nextStatus is not
+                (JobStatus.Completed or JobStatus.Canceled or JobStatus.Aborted))
+            {
+                throw new InvalidOperationException(
+                    $"終了状態ではありません。NextStatus={nextStatus}");
+            }
+        }
+
+        // 更新するカラム
+        string targetCol = _timestampColumnMap[jobType][nextStatus];
+
+        const string baseSql = """
+            UPDATE jobs
+            SET
+                job_status = @nextStatus
+            """;
+
+        const string whereSql = """
+            WHERE
+                id = @jobId
+                AND job_status = @currentStatus
+            """;
+
+        // SQL組立
+        StringBuilder sb = new();
+        sb.AppendLine(baseSql);
+
+        sb.AppendLine($", {targetCol} = GETDATE()");
+
+        // 遷移後が終了系ステータスの場合、closed_at も更新する
+        if (isClosed)
+        {
+            sb.AppendLine($", closed_at = GETDATE()");
+        }
+
+        sb.AppendLine(whereSql);
+
+        sb.AppendLine($"AND {targetCol} IS NULL");
+
+        // 完了済みJOBの再更新を防止する
+        if (isClosed)
+        {
+            sb.AppendLine($"AND closed_at IS NULL");
+        }
+
+        return connection.ExecuteAsync(
+            sb.ToString(),
+            new
+            {
+                nextStatus,
+                jobId,
+                currentStatus
+            },
+            transaction: transaction);
+
+    }
 }

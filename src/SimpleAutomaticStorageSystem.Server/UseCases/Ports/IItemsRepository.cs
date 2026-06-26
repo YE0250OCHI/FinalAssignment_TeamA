@@ -16,19 +16,19 @@ public interface IItemsRepository
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemId">商品ID</param>
     /// <returns>ItemModel?</returns>
-    Task<ItemModel?> GetItemByIdAsync(
+    Task<ItemModel?> GetItemByIdForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemId);
 
     /// <summary>
-    /// 品種コードを指定し、割り当て可能な在庫を取得する
+    /// 品種コードを指定し、FIFOで割当可能な在庫を取得する
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemCode">品種コード</param>
     /// <returns>割当可能な商品、存在しない場合はnull</returns>
-    Task<ItemModel?> GetAvailableItemAsync(
+    Task<ItemModel?> GetAvailableItemForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode);
@@ -41,7 +41,7 @@ public interface IItemsRepository
     /// <param name="itemCode">品種コード</param>
     /// <param name="equipmentId">自動倉庫ID</param>
     /// <returns>割当可能な在庫</returns>
-    Task<ItemModel?> GetPickableItemAsync(
+    Task<ItemModel?> GetPickableItemForUpdateAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode,
@@ -60,13 +60,13 @@ public interface IItemsRepository
         string equipmentId);
 
     /// <summary>
-    /// ItemCodeから、ItemTypeマスターを取り出す
+    /// ItemCodeからItemTypeを探す
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <param name="itemCode">品種コード</param>
-    /// <returns>品種データ</returns>
-    Task<ItemTypeModel?> GetItemTypeAsync(
+    /// <returns>存在すればture、しなければfalse</returns>
+    Task<bool> AnyItemTypeAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string itemCode);

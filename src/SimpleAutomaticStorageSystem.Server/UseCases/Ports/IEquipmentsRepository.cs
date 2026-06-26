@@ -43,6 +43,20 @@ public interface IEquipmentsRepository
         string pickingJobId);
 
     /// <summary>
+    /// 出庫JOBの解除
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="pickingJobId">現在実行中の出庫JOB番号</param>
+    /// <returns>影響した行数</returns>
+    Task<int> ReleasePickingJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId,
+        string pickingJobId);
+
+    /// <summary>
     /// 入庫JOBの割り当て
     /// </summary>
     /// <param name="connection">DB接続</param>
@@ -51,6 +65,20 @@ public interface IEquipmentsRepository
     /// <param name="putawayJobId">入庫JOB番号</param>
     /// <returns>影響した行数</returns>
     Task<int> AssignPutawayJobAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction,
+        string equipmentId,
+        string putawayJobId);
+
+    /// <summary>
+    /// 入庫JOBの解除
+    /// </summary>
+    /// <param name="connection">DB接続</param>
+    /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <param name="putawayJobId">現在実行中の入庫JOB番号</param>
+    /// <returns>影響した行数</returns>
+    Task<int> ReleasePutawayJobAsync(
         SqlConnection connection,
         SqlTransaction? transaction,
         string equipmentId,
@@ -73,5 +101,4 @@ public interface IEquipmentsRepository
         int availableCapacity,
         EquipmentStatus currentStatus,
         EquipmentStatus nextStatus);
-
 }

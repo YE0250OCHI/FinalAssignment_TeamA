@@ -9,7 +9,7 @@ namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
 public class JobAssigner(
     IOptions<DatabaseSettings> settings,
-    ILogger<JobManager> logger,
+    ILogger<JobAssigner> logger,
     IJobsRepository jobs,
     IItemsRepository items,
     IEquipmentsRepository equipments)
@@ -54,7 +54,7 @@ public class JobAssigner(
 
             // 割り当て可能な在庫を取得、なければ割り当てを終了
             ItemModel? availableItem =
-                await items.GetAvailableItemAsync(connection, transaction, currentJob.ItemCode);
+                await items.GetAvailableItemForUpdateAsync(connection, transaction, currentJob.ItemCode);
 
             if(availableItem is null)
             {
@@ -65,54 +65,49 @@ public class JobAssigner(
             string equipmentId = availableItem.EquipmentId;
 
             // 商品状態を更新
-            await items.UpdateItemStatusByIdAsync(
-                connection,
-                transaction,
-                availableItem.ItemId,
-                availableItem.Status,
-                StockStatus.Reserved);
+            int affectedItemRows =
+                await items.UpdateItemStatusByIdAsync(
+                    connection,
+                    transaction,
+                    availableItem.ItemId,
+                    availableItem.Status,
+                    StockStatus.Reserved);
 
             // JOBに商品、自動倉庫を割り当て
-            int affectedJobRows = await jobs.AssignJobAsync(
-                connection,
-                transaction,
-                jobId,
-                availableItem.ItemId,
-                equipmentId);
-
-            if ()
-            {
-            }
+            int affectedJobRows =
+                await jobs.AssignJobAsync(
+                    connection,
+                    transaction,
+                    jobId,
+                    availableItem.ItemId,
+                    equipmentId);
 
             // 装置状態を更新
-            int affectedEquipmentRows = 0;
-            if (currentJob.JobType == JobType.Picking)
+            int affectedEquipmentRows = currentJob.JobType switch
             {
-                // 出庫JOB
-                affectedEquipmentRows =
+                JobType.Picking =>
                     await equipments.AssignPickingJobAsync(
                         connection,
                         transaction,
                         equipmentId,
-                        jobId);
-            }
-            else
-            {
-                // 入庫JOB
-                affectedEquipmentRows =
+                        jobId),
+                JobType.Putaway =>
                     await equipments.AssignPutawayJobAsync(
                         connection,
                         transaction,
                         equipmentId,
-                        jobId);
-            }
+                        jobId),
+                _ => throw new InvalidOperationException(
+                    $"JOB種別が不正 JobId={jobId} JobType={currentJob.JobType}")
+            };
 
             // 更新失敗を検知
-            if (affectedJobRows != 1 ||
+            if (affectedItemRows != 1 ||
+                affectedJobRows != 1 ||
                 affectedEquipmentRows != 1)
             {
                 throw new InvalidOperationException(
-                    $"JOB割当に失敗した。JobId={jobId}, ItemId={availableItem.ItemId}, EquipmentId={equipmentId}, AffectedRows={affectedJobRows}");
+                    $"JOB割当に失敗した。JobId={jobId}, ItemId={availableItem.ItemId}, EquipmentId={equipmentId}, JobRows={affectedJobRows} ItemRows={affectedItemRows} EquipmentRows={affectedEquipmentRows}");
             }
 
             // コミット
@@ -129,13 +124,13 @@ public class JobAssigner(
             return new()
             {
                 JobId = jobId,
-                JobType = JobType.Picking,
+                JobType = currentJob.JobType,
                 ItemId = availableItem.ItemId,
                 EquipmentId = equipmentId
             };
 
         }
-        catch
+        catch (Exception ex)
         {
             try
             {
@@ -149,6 +144,7 @@ public class JobAssigner(
 
             // ログ
             logger.LogWarning(
+                ex,
                 "JOBへの商品割当失敗 JobId={JobId}",
                 jobId);
 
@@ -199,7 +195,7 @@ public class JobAssigner(
             foreach (JobModel j in incompleteJobs)
             {
                 targetItem =
-                    await items.GetPickableItemAsync(
+                    await items.GetPickableItemForUpdateAsync(
                         connection, transaction, j.ItemCode, equipmentId);
 
                 if(targetItem is not null)
@@ -230,12 +226,13 @@ public class JobAssigner(
             }
 
             // 商品状態を更新
-            await items.UpdateItemStatusByIdAsync(
-                connection,
-                transaction,
-                targetItem.ItemId,
-                targetItem.Status,
-                StockStatus.Reserved);
+            int affectedItemRows =
+                await items.UpdateItemStatusByIdAsync(
+                    connection,
+                    transaction,
+                    targetItem.ItemId,
+                    targetItem.Status,
+                    StockStatus.Reserved);
 
             // JOBに商品、自動倉庫を割り当て
             int affectedJobRows =
@@ -255,11 +252,12 @@ public class JobAssigner(
                     targetJob.JobId);
 
             // 更新失敗を検知
-            if (affectedJobRows != 1 ||
+            if (affectedItemRows != 1 ||
+                affectedJobRows != 1 ||
                 affectedEquipmentRows != 1)
             {
                 throw new InvalidOperationException(
-                    $"JOB割当に失敗した。 JobId={targetJob.JobId}, ItemId={targetItem.ItemId}, EquipmentId={equipmentId}, AffectedRows={affectedJobRows}");
+                    $"JOB割当に失敗した。JobId={targetJob.JobId}, ItemId={targetItem.ItemId}, EquipmentId={equipmentId}, JobRows={affectedJobRows} ItemRows={affectedItemRows} EquipmentRows={affectedEquipmentRows}");
             }
 
             // コミット
@@ -282,7 +280,7 @@ public class JobAssigner(
             };
 
         }
-        catch
+        catch (Exception ex)
         {
             try
             {
@@ -296,6 +294,7 @@ public class JobAssigner(
 
             // ログ
             logger.LogWarning(
+                ex,
                 "自動倉庫へのJOB割当失敗 EquipmentId={EquipmentId}",
                 equipmentId);
 
