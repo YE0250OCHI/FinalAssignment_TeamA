@@ -6,10 +6,10 @@
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|-|-|-|-|○|-|-|-|
-|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/job|-|-|☆|-|-|○|-|-|-|
-|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/job/{id}/initiate|-|-|-|○|-|○|○|○|-|
-|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/complete|-|-|-|○|-|○|○|○|-|
-|取出し完了報告|自動倉庫|POST|/api/v1/racks/job/{id}/remove|-|-|-|○|-|○|○|○|-|
+|次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/jobs|-|-|☆|-|-|○|-|-|-|
+|JOB作業開始報告|自動倉庫|POST|/api/v1/racks/jobs/{id}/initiate|-|-|-|○|-|○|○|○|-|
+|JOB作業完了報告|自動倉庫|POST|/api/v1/racks/jobs/{id}/complete|-|-|-|○|-|○|○|○|-|
+|取出し完了報告|自動倉庫|POST|/api/v1/racks/jobs/{id}/remove|-|-|-|○|-|○|○|○|-|
 |入庫要求|自動倉庫|POST|/api/v1/racks/putaway-order|-|○|○|○|○|○|-|-|○|
 |アラーム報告|自動倉庫|POST|/api/v1/racks/alarms|-|○|-|-|○|○|-|-|-|
 
@@ -185,7 +185,7 @@ POST /api/v1/racks/online
 ### リクエスト
 
 ``` http
-POST /api/v1/racks/job
+POST /api/v1/racks/jobs
 ```
 
 ### レスポンス
@@ -222,7 +222,7 @@ POST /api/v1/racks/job
 ### リクエスト
 
 ``` http
-POST /api/v1/racks/job/{id}/initiate
+POST /api/v1/racks/jobs/{id}/initiate
 ```
 
 id : JOB番号（例：J20260616-01）
@@ -277,7 +277,7 @@ JOBの発行元と、キャンセル送信者が異なる
 ### リクエスト
 
 ``` http
-POST /api/v1/racks/job/{id}/complete
+POST /api/v1/racks/jobs/{id}/complete
 ```
 
 id : JOB番号（例：J20260616-01）
@@ -332,7 +332,7 @@ JOBの発行元と、キャンセル送信者が異なる
 ### リクエスト
 
 ``` http
-POST /api/v1/racks/job/{id}/remove
+POST /api/v1/racks/jobs/{id}/remove
 ```
 
 id : JOB番号（例：J20260616-01）

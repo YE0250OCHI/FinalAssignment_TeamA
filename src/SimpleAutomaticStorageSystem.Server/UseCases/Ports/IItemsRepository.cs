@@ -72,12 +72,12 @@ public interface IItemsRepository
         string itemCode);
 
     /// <summary>
-    /// ItemTypeの一覧を取り出す
+    /// 在庫登録のある商品の一覧を返す
     /// </summary>
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>品種データ</returns>
-    Task<IEnumerable<ItemTypeModel>> GetItemTypesAsync(
+    Task<IEnumerable<ItemTypeModel>> GetPickableItemListAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 

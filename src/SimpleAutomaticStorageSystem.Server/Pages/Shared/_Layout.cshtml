@@ -8,9 +8,7 @@
 	};
 
 	var title = titles.GetValueOrDefault(pageName, "ページ");
-}
-
-<!DOCTYPE html>
+}<!DOCTYPE html>
 <html lang="ja">
 <head>
 	<link rel="manifest" href="/manifest.json">
@@ -23,7 +21,6 @@
 	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 	<link rel="stylesheet" href="~/SimpleAutomaticStorageSystem.Server.styles.css" asp-append-version="true" />
 </head>
-
 <body>
 	<header class="fixed-top bg-white shadow-sm">
 		<div class="container py-3" style="max-width: 500px;">
@@ -33,25 +30,27 @@
 					@title
 				</h2>
 
-				<div class="position-relative">
+				<div class="dropdown">
 					<button id="menuButton"
-							class="btn btn-outline-primary">
+							class="btn btn-outline-primary"
+							type="button"
+							data-bs-toggle="dropdown"
+							aria-expanded="false">
 						☰
 					</button>
 
-					<div id="menuDropdown"
-						 class="card position-absolute d-none"
-						 style="right:0; top:40px; width:150px; z-index:1000;">
-
-						<a asp-page="/picking-orders" class="dropdown-item p-2">
-							出庫依頼
-						</a>
-
-						<a asp-page="/picking-orders/history" class="dropdown-item p-2">
-							履歴
-						</a>
-
-					</div>
+					<ul id="menuDropdown" class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 150px; z-index: 1000;">
+						<li>
+							<a asp-page="/picking-orders" class="dropdown-item p-2">
+								出庫依頼
+							</a>
+						</li>
+						<li>
+							<a asp-page="/picking-orders/history" class="dropdown-item p-2">
+								履歴
+							</a>
+						</li>
+					</ul>
 				</div>
 
 			</div>
@@ -68,9 +67,17 @@
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 	<script>
-		if ('serviceWorker' in navigator)
-		{
-		navigator.serviceWorker.register('/sw.js');
+		console.log(window.isSecureContext);
+
+		// ブラウザがService Workerに対応しているか確認
+		if ('serviceWorker' in navigator) {
+			console.log('test');
+
+			window.addEventListener('load', () => {
+				navigator.serviceWorker.register('/service-worker.js')
+					.then(reg => console.log('Service Worker 登録成功！Scope: ', reg.scope))
+					.catch(err => console.error('Service Worker 登録失敗...', err));
+			});
 		}
 	</script>
 </body>
