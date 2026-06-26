@@ -1,84 +1,150 @@
 ﻿@{
-	var pageName = ViewContext.RouteData.Values["page"]?.ToString();
+    var pageName = ViewContext.RouteData.Values["page"]?.ToString();
 
-	var titles = new Dictionary<string, string>
-	{
-		["/picking-orders"] = "出庫依頼",
-		["/picking-orders/history"] = "履歴"
-	};
+    string title = "default page";
+    if (pageName.Contains("picking-orders/history"))
+    {
+        title = "履歴";
+    }
+    else if (pageName.Contains("picking-orders"))
+    {
+        title = "出庫依頼";
+    }
 
-	var title = titles.GetValueOrDefault(pageName, "ページ");
-}<!DOCTYPE html>
+    var title = titles.GetValueOrDefault(pageName, "ページ");
+}
+
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-	<link rel="manifest" href="/manifest.json">
-	<meta name="theme-color" content="#0d6efd">
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>@ViewData["Title"]</title>
-	<script type="importmap"></script>
-	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-	<link rel="stylesheet" href="~/SimpleAutomaticStorageSystem.Server.styles.css" asp-append-version="true" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"]</title>
+
+    <script type="importmap"></script>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/SimpleAutomaticStorageSystem.Server.styles.css"
+          asp-append-version="true" />
 </head>
+
 <body>
-	<header class="fixed-top bg-white shadow-sm">
-		<div class="container py-3" style="max-width: 500px;">
-			<div class="d-flex justify-content-between align-items-center border-bottom border-primary border-2 pb-2">
 
-				<h2 class="text-primary fs-3 fw-bold m-0">
-					@title
-				</h2>
+    <!-- ヘッダー -->
+    <header class="fixed-top bg-white shadow-sm">
+        <div class="container-fluid py-3">
 
-				<div class="dropdown">
-					<button id="menuButton"
-							class="btn btn-outline-primary"
-							type="button"
-							data-bs-toggle="dropdown"
-							aria-expanded="false">
-						☰
-					</button>
+            <div class="d-flex
+                        justify-content-between
+                        align-items-center
+                        border-bottom
+                        border-primary
+                        border-2
+                        pb-2">
 
-					<ul id="menuDropdown" class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 150px; z-index: 1000;">
-						<li>
-							<a asp-page="/picking-orders" class="dropdown-item p-2">
-								出庫依頼
-							</a>
-						</li>
-						<li>
-							<a asp-page="/picking-orders/history" class="dropdown-item p-2">
-								履歴
-							</a>
-						</li>
-					</ul>
-				</div>
+                <h2 class="text-primary fs-3 fw-bold m-0">
+                    @title
+                </h2>
 
-			</div>
-		</div>
-	</header>
+                <div class="dropdown">
 
-	<main class="container" style="padding-top:100px;">
-		@RenderBody()
-	</main>
+                    <button id="menuButton"
+                            class="btn btn-outline-primary"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        ☰
+                    </button>
 
-	@await RenderSectionAsync("Scripts", required: false)
+                    <ul id="menuDropdown"
+                        class="dropdown-menu dropdown-menu-end shadow-sm"
+                        style="min-width:150px; z-index:1000;">
 
-	<script src="~/lib/jquery/dist/jquery.min.js"></script>
-	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
-	<script>
-		console.log(window.isSecureContext);
+                        <li>
+                            <a asp-page="/picking-orders"
+                               class="dropdown-item p-2">
+                                出庫依頼
+                            </a>
+                        </li>
 
-		// ブラウザがService Workerに対応しているか確認
-		if ('serviceWorker' in navigator) {
-			console.log('test');
+                        <li>
+                            <a asp-page="/picking-orders/history"
+                               class="dropdown-item p-2">
+                                履歴
+                            </a>
+                        </li>
 
-			window.addEventListener('load', () => {
-				navigator.serviceWorker.register('/service-worker.js')
-					.then(reg => console.log('Service Worker 登録成功！Scope: ', reg.scope))
-					.catch(err => console.error('Service Worker 登録失敗...', err));
-			});
-		}
-	</script>
+                    </ul>
+
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- メイン -->
+    <main class="container-fluid pt-5 mt-4">
+
+        <div class="row justify-content-center">
+
+            <!--
+                スマホ:100%
+                タブレット:約83%
+                PC:約67%
+            -->
+            <div class="col-12 col-md-10 col-lg-8">
+
+                @RenderBody()
+
+            </div>
+
+        </div>
+
+    </main>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    <script>
+        console.log(window.isSecureContext);
+
+        if ('serviceWorker' in navigator) {
+
+            window.addEventListener('load', () => {
+
+                navigator.serviceWorker
+                    .register('/service-worker.js')
+
+                    .then(reg =>
+                        console.log(
+                            'Service Worker 登録成功！ Scope:',
+                            reg.scope))
+
+                    .catch(err =>
+                        console.error(
+                            'Service Worker 登録失敗...',
+                            err));
+            });
+        }
+    </script>
+
 </body>
 </html>
