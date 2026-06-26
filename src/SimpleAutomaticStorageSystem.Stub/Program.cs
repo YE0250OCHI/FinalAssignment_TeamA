@@ -170,6 +170,10 @@ while (true)
                 break;
             }
         }
+        else
+        {
+            await Task.Delay(100);
+        }
     }
     if (state.State == RackState.Fatal)
     {
