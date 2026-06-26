@@ -14,4 +14,13 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\icons\icon-192.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\icons\icon-512.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

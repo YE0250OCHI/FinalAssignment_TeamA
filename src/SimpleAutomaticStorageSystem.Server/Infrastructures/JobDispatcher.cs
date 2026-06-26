@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.Options;
-using SimpleAutomaticStorageSystem.Server.Domains;
+﻿using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using System.Text.Json;
 
 namespace SimpleAutomaticStorageSystem.Server.Infrastructures;
 
@@ -11,7 +12,8 @@ public class JobDispatcher(
     HttpClient httpClient,
     IOptions<HttpSettings> options,
     ILogger<JobDispatcher> logger,
-    JobManager jobManager) : IJobDispatcher
+    JobManager jobManager,
+    IOptions<JsonOptions> jsonOptions) : IJobDispatcher
 {
     // 定数
     private const string PostUri = "/api/v1/next-picking-order";
@@ -19,6 +21,10 @@ public class JobDispatcher(
     // 自動倉庫の通信設定
     private readonly Dictionary<string, EquipmentSetting> _equipmentsMap =
         options.Value.Equipments.ToDictionary(x => x.EquipmentId);
+
+    // JSON変換設定
+    private readonly JsonSerializerOptions _serializeOptions =
+        jsonOptions.Value.SerializerOptions;
 
     /// <inheritdoc/>
     public async Task PushAsync(AssignedJobDto jobDto)
@@ -46,7 +52,8 @@ public class JobDispatcher(
                         jobId = jobDto.JobId,
                         jobType = jobDto.JobType,
                         itemId = jobDto.ItemId
-                    });
+                    },
+                    _serializeOptions);
 
             // レスポンス評価
             if (!responseMessage.IsSuccessStatusCode)

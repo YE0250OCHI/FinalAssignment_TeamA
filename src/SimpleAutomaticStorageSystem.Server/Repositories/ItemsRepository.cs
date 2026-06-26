@@ -116,22 +116,33 @@ public class ItemsRepository:IItemsRepository
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ItemTypeModel>> GetItemTypesAsync(
+    public Task<IEnumerable<ItemTypeModel>> GetPickableItemListAsync(
         SqlConnection connection,
         SqlTransaction? transaction)
     {
         const string sql = """            
-            SELECT
-                i.code AS [ItemCode],
-                i.name AS [ItemName]
+            SELECT DISTINCT
+                t.code AS [ItemCode],
+                t.name AS [ItemName]
             FROM
-                item_types i
+                item_types t
+            JOIN
+                items i ON i.item_code = t.code
+            WHERE
+                i.stock_status IN @Statuses
             ORDER BY
-                i.code ASC
+                t.code ASC
             """;
 
         return connection.QueryAsync<ItemTypeModel>(
             sql,
+            new
+            {
+                Statuses = new[]
+                {
+                    StockStatus.Stored
+                }
+            },
             transaction: transaction);
     }
 
