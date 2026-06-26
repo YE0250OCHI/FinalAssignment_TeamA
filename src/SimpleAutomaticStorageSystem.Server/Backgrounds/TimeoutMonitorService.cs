@@ -7,10 +7,9 @@ using SimpleAutomaticStorageSystem.Server.UseCases;
 namespace SimpleAutomaticStorageSystem.Server.Backgrounds;
 
 public class TimeoutMonitorService(
-    ILogger<RacksApiController> logger,
+    ILogger<TimeoutMonitorService> logger,
     IOptions<TimeoutSettings> options,
-    JobViewer jobViewer,
-    JobManager jobManager) : BackgroundService
+    IServiceScopeFactory scopeFactory) : BackgroundService
 {
     // 監視周期の設定
     private readonly TimeSpan _monitorInterval =
@@ -37,6 +36,15 @@ public class TimeoutMonitorService(
             // キャンセルされない間継続
             while (!stoppingToken.IsCancellationRequested)
             {
+                // スコープの作成
+                using IServiceScope scope = scopeFactory.CreateScope();
+
+                // サービスの作成
+                JobViewer jobViewer =
+                    scope.ServiceProvider.GetRequiredService<JobViewer>();
+                JobManager jobManager =
+                    scope.ServiceProvider.GetRequiredService<JobManager>();
+
                 // JOB一覧を取得
                 List<JobModel> incompleteJobs =
                     await jobViewer.GetIncompleteJobsAsync();

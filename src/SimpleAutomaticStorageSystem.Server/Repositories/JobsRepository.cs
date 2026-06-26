@@ -491,9 +491,6 @@ public class JobsRepository: IJobsRepository
             }
         }
 
-        // 更新するカラム
-        string targetCol = _timestampColumnMap[jobType][nextStatus];
-
         const string baseSql = """
             UPDATE jobs
             SET
@@ -510,7 +507,13 @@ public class JobsRepository: IJobsRepository
         StringBuilder sb = new();
         sb.AppendLine(baseSql);
 
-        sb.AppendLine($", {targetCol} = GETDATE()");
+        // 更新するカラム
+
+        if(nextStatus is not (JobStatus.Canceled or JobStatus.Aborted))
+        {
+            string targetCol = _timestampColumnMap[jobType][nextStatus];
+            sb.AppendLine($", {targetCol} = GETDATE()");
+        }
 
         // 遷移後が終了系ステータスの場合、closed_at も更新する
         if (isClosed)
@@ -520,7 +523,12 @@ public class JobsRepository: IJobsRepository
 
         sb.AppendLine(whereSql);
 
-        sb.AppendLine($"AND {targetCol} IS NULL");
+
+        if (nextStatus is not (JobStatus.Canceled or JobStatus.Aborted))
+        {
+            string targetCol = _timestampColumnMap[jobType][nextStatus];
+            sb.AppendLine($"AND {targetCol} IS NULL");
+        }
 
         // 完了済みJOBの再更新を防止する
         if (isClosed)

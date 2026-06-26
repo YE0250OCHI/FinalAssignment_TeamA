@@ -216,8 +216,10 @@ public class IndexModel(
         }
 
         logger.LogInformation(
-            "スマホアクセス DeviceId={DeviceId}",
-            deviceId);
+            "スマホアクセス DeviceId={DeviceId} Method={Method} Url={Url}",
+            deviceId,
+            HttpContext.Request.Method,
+            HttpContext.Request.Path);
 
         return true;
 
