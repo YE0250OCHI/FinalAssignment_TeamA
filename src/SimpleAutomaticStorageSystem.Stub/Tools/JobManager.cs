@@ -20,13 +20,13 @@ internal class JobManager
             return false;
         }
 
-        if (job.JobType == "PICKING")
+        if (job.JobType == "storing")
         {
-            _pickingJobs.Enqueue(job);
+            _storingJobs.Enqueue(job);
         }
         else
         {
-            _storingJobs.Enqueue(job);
+            _pickingJobs.Enqueue(job);
         }
 
         return true;
