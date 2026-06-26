@@ -1,7 +1,11 @@
 ﻿console.log("site.js loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateTaskList()??"";
+
+    updateTaskList();
+
+    setInterval(updateTaskList, 3000);
+
 });
 
 
