@@ -1,4 +1,11 @@
-﻿//未完了タスクリスト取得
+﻿console.log("site.js loaded");
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateTaskList();
+});
+
+
+//未完了タスクリスト取得
 async function updateTaskList() {
     try {
         //responseに受け取ったデータを格納
@@ -71,6 +78,11 @@ async function updateTaskList() {
                     '</button>';
             }
 
+            const token =
+                document.querySelector(
+                    'input[name="__RequestVerificationToken"]'
+                ).value;
+
             html +=
                 '<div class="d-flex justify-content-between align-items-center ' +
                 bgClass +
@@ -88,11 +100,15 @@ async function updateTaskList() {
                 '</span>' +
                 '</div>' +
 
-                '<form method="post" action="?handler=Cancel&jobId=' + item.jobId + '">' +
+            '<form method="post" action="/picking-orders/' + encodeURIComponent(item.jobId) + '?handler=Cancel">' +
+            '<input type="hidden" name="__RequestVerificationToken" value="' + token + '">'+
                 cancelButton +
                 '</form>' +
 
                 '</div>';
+
+            console.log(item.jobId);
+
         });
 
         container.innerHTML = html;
