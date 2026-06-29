@@ -72,20 +72,20 @@ GET /api/v1/picking-orders
 {
   "available": [
     {
-      "itemCode": "I01",
-      "itemName": "部品A"
+      "keyCode": "I01",
+      "text": "I01 部品A"
     },
     {
-      "itemCode": "I03",
-      "itemName": "部品C"
+      "keyCode": "I03",
+      "text": "I03 部品C"
     },
     {
-      "itemCode": "I04",
-      "itemName": "部品D"
+      "keyCode": "I04",
+      "text": "I04 部品D"
     },
     {
-      "itemCode": "I05",
-      "itemName": "部品E"
+      "keyCode": "I05",
+      "text": "I05 部品E"
     }
   ],
   "statuses": [
