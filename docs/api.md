@@ -4,7 +4,7 @@
 
 |作業名|利用者|メソッド|URL|ｸｴﾘ|Req|Res|422|400|401|403|404|409|
 |:---|:---|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|未完了出庫依頼取得|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|-|
+|出庫依頼状態|スマホ|GET|/api/v1/picking-orders|-|-|○|-|-|○|-|-|-|
 |オンライン要求|自動倉庫|POST|/api/v1/racks/online|-|-|-|-|-|○|-|-|-|
 |次出庫JOB問合せ|自動倉庫|GET|/api/v1/racks/jobs|-|-|☆|-|-|○|-|-|-|
 |JOB作業開始報告|自動倉庫|POST|/api/v1/racks/jobs/{id}/initiate|-|-|-|○|-|○|○|○|-|
@@ -70,82 +70,86 @@ GET /api/v1/picking-orders
 取得成功：作業途中のJOB一覧
 ``` json
 {
-  "count" : 6,
-  "results" : [
+  "available": [
     {
-      "jobId" : "J20260616-49",
-      "itemCode" : "I02",
-      "itemName" : "部品B",
-      "status" : "Recovering",
-      "equipmentId" : null,
-      "canCancel": true
+      "keyCode": "I01",
+      "text": "I01 部品A"
     },
     {
-      "jobId" : "J20260616-50",
-      "itemCode" : "I01",
-      "itemName" : "部品A",
-      "status" : "WaitOut",
-      "equipmentId" : "AS01",
+      "keyCode": "I03",
+      "text": "I03 部品C"
+    },
+    {
+      "keyCode": "I04",
+      "text": "I04 部品D"
+    },
+    {
+      "keyCode": "I05",
+      "text": "I05 部品E"
+    }
+  ],
+  "statuses": [
+    {
+      "jobId": "J20260616-50",
+      "itemCode": "I01",
+      "itemName": "部品A",
+      "status": "WaitOut",
+      "equipmentId": "AS01",
       "canCancel": false
     },
     {
-      "jobId" : "J20260616-51",
-      "itemCode" : "I01",
-      "itemName" : "部品A",
-      "status" : "Working",
-      "equipmentId" : "AS03",
+      "jobId": "J20260616-51",
+      "itemCode": "I01",
+      "itemName": "部品A",
+      "status": "Transferring",
+      "equipmentId": "AS03",
       "canCancel": false
     },
     {
-      "jobId" : "J20260616-52",
-      "itemCode" : "I01",
-      "itemName" : "部品A",
-      "status" : "Waiting",
-      "equipmentId" : "AS04",
+      "jobId": "J20260616-52",
+      "itemCode": "I01",
+      "itemName": "部品A",
+      "status": "Transferring",
+      "equipmentId": "AS04",
       "canCancel": true
     },
     {
-      "jobId" : "J20260616-53",
-      "itemCode" : "I03",
-      "itemName" : "部品C",
-      "status" : "Waiting",
-      "equipmentId" : "AS05",
-      "canCancel": true
-    },
-    {
-      "jobId" : "J20260616-54",
-      "itemCode" : "I01",
-      "itemName" : "部品A",
-      "status" : "Waiting",
-      "equipmentId" : null,
+      "jobId": "J20260616-54",
+      "itemCode": "I01",
+      "itemName": "部品A",
+      "status": "Waiting",
+      "equipmentId": null,
       "canCancel": true
     }
   ]
 }
 ```
 
-取得成功：履歴がないとき
+取得成功：在庫なし、履歴なし
 ``` json
 {
-  "count" : 0,
-  "results" : []
+  "available": [],
+  "statuses": []
 }
 ```
 
-**status補足**
-- Waiting：作業開始前
-- Working：出庫作業中
-- WaitOut：商品取出待ち
-- Recovering：異常発生により復旧・再割当処理中
+**statuses.status凡例**
+|状態|説明|備考|
+|:---|:---|:---|
+|Waiting|準備中|キャンセル可能|
+|Transferring|搬送中||
+|WaitOut|取出待ち||
 
 #### 401 Unauthorized
 
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
+
+***
 
 ## オンライン要求
 
@@ -176,7 +180,7 @@ POST /api/v1/racks/online
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -195,9 +199,9 @@ POST /api/v1/racks/jobs
 出庫JOBが存在している
 ``` json
 {
-  "jobId" : "J20260616-01",
-  "jobType" : "PICKING",
-  "itemId" : "I01-260616-004"
+  "jobId": "J20260616-01",
+  "jobType": "PICKING",
+  "itemId": "I01-260616-004"
 }
 ```
 
@@ -213,7 +217,7 @@ POST /api/v1/racks/jobs
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -241,7 +245,7 @@ id : JOB番号（例：J20260616-01）
 開始遷移に失敗（開始ができない）
 ``` json
 {
-  "error" : "INVALID_STATUS"
+  "error": "INVALID_STATUS"
 }
 ```
 
@@ -250,7 +254,7 @@ id : JOB番号（例：J20260616-01）
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -259,7 +263,7 @@ id : JOB番号（例：J20260616-01）
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
 {
-  "error" : "ACCESS_DENIED_JOB"
+  "error": "ACCESS_DENIED_JOB"
 }
 ```
 
@@ -268,7 +272,7 @@ JOBの発行元と、キャンセル送信者が異なる
 指定されたJOBが存在しない（idが間違っている）
 ``` json
 {
-  "error" : "JOB_NOT_FOUND"
+  "error": "JOB_NOT_FOUND"
 }
 ```
 
@@ -296,7 +300,7 @@ id : JOB番号（例：J20260616-01）
 完了遷移に失敗（完了ができない）
 ``` json
 {
-  "error" : "INVALID_STATUS"
+  "error": "INVALID_STATUS"
 }
 ```
 
@@ -305,7 +309,7 @@ id : JOB番号（例：J20260616-01）
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -314,7 +318,7 @@ id : JOB番号（例：J20260616-01）
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
 {
-  "error" : "ACCESS_DENIED_JOB"
+  "error": "ACCESS_DENIED_JOB"
 }
 ```
 
@@ -323,7 +327,7 @@ JOBの発行元と、キャンセル送信者が異なる
 指定されたJOBが存在しない（idが間違っている）
 ``` json
 {
-  "error" : "JOB_NOT_FOUND"
+  "error": "JOB_NOT_FOUND"
 }
 ```
 
@@ -351,7 +355,7 @@ id : JOB番号（例：J20260616-01）
 取出し完了遷移に失敗（取出しができない）
 ``` json
 {
-  "error" : "INVALID_STATUS"
+  "error": "INVALID_STATUS"
 }
 ```
 
@@ -360,7 +364,7 @@ id : JOB番号（例：J20260616-01）
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -369,7 +373,7 @@ id : JOB番号（例：J20260616-01）
 JOBの発行元と、キャンセル送信者が異なる
 ``` json
 {
-  "error" : "ACCESS_DENIED_JOB"
+  "error": "ACCESS_DENIED_JOB"
 }
 ```
 
@@ -378,7 +382,7 @@ JOBの発行元と、キャンセル送信者が異なる
 指定されたJOBが存在しない（idが間違っている）
 ``` json
 {
-  "error" : "JOB_NOT_FOUND"
+  "error": "JOB_NOT_FOUND"
 }
 ```
 
@@ -393,7 +397,7 @@ POST /api/v1/racks/putaway-order
 入庫したい品種
 ``` json
 {
-  "itemCode" : "I04"
+  "itemCode": "I04"
 }
 ```
 
@@ -404,9 +408,9 @@ POST /api/v1/racks/putaway-order
 作成成功：入庫JOBデータを返却
 ``` json
 {
-  "jobId" : "J20260616-22",
-  "jobType" : "PUTAWAY",
-  "itemId" : "I04-260616-037"
+  "jobId": "J20260616-22",
+  "jobType": "PUTAWAY",
+  "itemId": "I04-260616-037"
 }
 ```
 
@@ -415,14 +419,14 @@ POST /api/v1/racks/putaway-order
 品種コードが不正
 ``` json
 {
-  "error" : "INVALID_ITEM_CODE"
+  "error": "INVALID_ITEM_CODE"
 }
 ```
 
 棚の空き容量がない
 ``` json
 {
-  "error" : "NO_CAPACITY_AVAILABLE"
+  "error": "NO_CAPACITY_AVAILABLE"
 }
 ```
 
@@ -431,7 +435,7 @@ POST /api/v1/racks/putaway-order
 リクエスト形式が不正
 ``` json
 {
-  "error" : "INVALID_REQUEST"
+  "error": "INVALID_REQUEST"
 }
 ```
 
@@ -440,7 +444,7 @@ POST /api/v1/racks/putaway-order
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -449,7 +453,7 @@ POST /api/v1/racks/putaway-order
 状態不一致（入庫JOBが実行中に送られた）
 ``` json
 {
-  "error" : "INVALID_STATUS"
+  "error": "INVALID_STATUS"
 }
 ```
 
@@ -464,7 +468,7 @@ POST /api/v1/racks/alarms
 アラーム詳細（エラーの内容のこと）
 ``` json
 {
-  "alarmCode" : "EMERGENCY_OFF",
+  "alarmCode": "EMERGENCY_OFF",
   "occurredAt": "2026-06-16T15:30:00"
 }
 ```
@@ -483,7 +487,7 @@ POST /api/v1/racks/alarms
 リクエスト形式が不正
 ``` json
 {
-  "error" : "INVALID_REQUEST"
+  "error": "INVALID_REQUEST"
 }
 ```
 
@@ -492,7 +496,7 @@ POST /api/v1/racks/alarms
 未登録の端末からの要求
 ``` json
 {
-  "error" : "UNREGISTERED_DEVICE"
+  "error": "UNREGISTERED_DEVICE"
 }
 ```
 
@@ -505,7 +509,7 @@ POST /api/v1/racks/alarms
 その他の予期しないエラー
 ``` json
 {
-  "error" : "UNEXPECTED_ERROR"
+  "error": "UNEXPECTED_ERROR"
 }
 ```
 
@@ -522,9 +526,9 @@ POST /api/v1/next-picking-order　　　
 出庫JOBデータ
 ``` json
 {
-  "jobId" : "J20260616-01",
-  "jobType" : "PICKING",
-  "itemId" : "I01-260616-004"
+  "jobId": "J20260616-01",
+  "jobType": "PICKING",
+  "itemId": "I01-260616-004"
 }
 ```
 
@@ -542,7 +546,7 @@ POST /api/v1/next-picking-order　　　
 リクエスト形式が不正
 ``` json
 {
-  "error" : "INVALID_REQUEST"
+  "error": "INVALID_REQUEST"
 }
 ```
 
@@ -551,6 +555,6 @@ POST /api/v1/next-picking-order　　　
 指令を受け付けられない
 ``` json
 {
-  "error" : "CANNOT_DISPATCH"
+  "error": "CANNOT_DISPATCH"
 }
 ```
