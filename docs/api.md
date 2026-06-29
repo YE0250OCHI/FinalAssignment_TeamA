@@ -73,8 +73,7 @@ GET /api/v1/picking-orders
   "available": [
     {
       "itemCode": "I01",
-      "itemName": "部品A",
-      "stockCount": 9
+      "itemName": "部品A"
     },
     {
       "itemCode": "I03",
