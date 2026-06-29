@@ -77,18 +77,15 @@ GET /api/v1/picking-orders
     },
     {
       "itemCode": "I03",
-      "itemName": "部品C",
-      "stockCount": 2
+      "itemName": "部品C"
     },
     {
       "itemCode": "I04",
-      "itemName": "部品D",
-      "stockCount": 6
+      "itemName": "部品D"
     },
     {
       "itemCode": "I05",
-      "itemName": "部品E",
-      "stockCount": 11
+      "itemName": "部品E"
     }
   ],
   "statuses": [
