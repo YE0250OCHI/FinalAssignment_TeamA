@@ -159,7 +159,7 @@ while (true)
             }
             catch (HttpRequestException ex)
             {
-                sysLogger.Warn($"オンライン通知 通信エラー：{ex.Message}");
+                sysLogger.Warn($"オンライン通知 通信エラー：{ex}");
             }
             catch (TaskCanceledException)
             {
