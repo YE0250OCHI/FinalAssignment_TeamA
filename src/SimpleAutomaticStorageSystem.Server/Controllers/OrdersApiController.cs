@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SimpleAutomaticStorageSystem.Server.Dto;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
+using SimpleAutomaticStorageSystem.Server.UseCases.Response;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
 
@@ -13,6 +15,7 @@ namespace SimpleAutomaticStorageSystem.Server.Controllers;
 public class OrdersApiController(
     ILogger<OrdersApiController> logger,
     JobViewer jobViewer,
+    InventoryViewer inventoryViewer,
     ClientValidator validator) : ControllerBase
 {
     /// <summary>
@@ -28,11 +31,23 @@ public class OrdersApiController(
         {
             // ログ＆認証を行う
             // 未登録スマホからの要求 -> 401スロー
-            OrdersApi(HttpContext, out var deviceId);
+            OrdersApiInitialize(out var deviceId);
+
+            // 出庫可能リスト取得
+            List<AvailableItemsResponse> availableItems =
+                await inventoryViewer.GetItemListAsync();
+
 
             // 未完了JOBの最新状態を取得する
-            IncompleteJobsResponse response =
+            IncompleteJobsResponse incompleteJobs =
                 await jobViewer.GetIncompleteJobsResponseAsync(deviceId);
+
+            // レスポンス組立
+            var response = new
+            {
+                Available = availableItems,
+                Statuses = incompleteJobs.Results
+            };
 
             // JOB状態の返却
             return Ok(response);
@@ -71,8 +86,11 @@ public class OrdersApiController(
     //   プライベートメソッド
     // =========================
 
-    private void OrdersApi(HttpContext context, out string deviceId)
+    // 初期化
+    private void OrdersApiInitialize(out string deviceId)
     {
+        HttpContext context = HttpContext;
+
         string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
         HttpRequest request = context.Request;
 

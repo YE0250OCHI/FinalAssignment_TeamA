@@ -1,119 +1,69 @@
 ﻿@page "/picking-orders/{jobId?}"
-@model IndexModel
-
+@model SimpleAutomaticStorageSystem.Server.Pages.PickingOrders.IndexModel
 @{
-    Layout = "_Layout";
+    ViewData["Title"] = "出庫依頼";
 }
 
-<div class="card bg-light rounded-4 p-3 mb-4 border-secondary border-opacity-25">
-    <h5 class="fw-bold fs-6 mb-1">出庫依頼新規作成</h5>
-    <div id="errorMessage"
-         class="text-danger small mb-2"
-         style="white-space: pre-line;">
-    </div>
+<!--
+    js用id一覧
 
-    <div class="d-flex flex-column gap-2"
-         id="incompleteTaskListContainer">
+-->
 
-    <form method="post"
-          asp-page-handler="AddOrder"
-          class="d-flex gap-2">
-
-        <select asp-for="SelectedItem"
-                asp-items="@Model.ItemList"
-                class="form-select border-dark shadow-sm"
-                required>
-
-            <option value="">
-                -- 部品を選択してください --
-            </option>
-
-        </select>
-
-        <button type="submit"
-                class="btn btn-primary fw-bold px-3 shadow-sm">
-
-            追加
-
-        </button>
-
-    </form>
-</div>
-
-<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
-    <h5 class="fw-bold fs-6 mb-3">
-        未完了出庫依頼一覧
-    </h5>
-
-        <!-- 未完了タスクコンテナ -->
-
-    </div>
-</div>
-
-
-<!-- ========================= -->
-<!-- エラーモーダル -->
-<!-- ========================= -->
-
-<div class="modal fade"
-     id="errorModal"
-     tabindex="-1"
-     aria-hidden="true">
-
-    <div class="modal-dialog
-        modal-dialog-centered
-        modal-sm">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    エラー
-                </h5>
-
-            </div>
-
-            <div class="modal-body text-center"
-                 style="white-space: pre-line;">
-
-                @Model.ErrorMessage
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-primary"
-                        data-bs-dismiss="modal">
-
-                    確認
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- ========================= -->
-<!-- モーダル表示制御 -->
-<!-- ========================= -->
-@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
-{
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const modal =
-                new bootstrap.Modal(
-                    document.getElementById('errorModal'));
-
-            modal.show();
-
-        });
-    </script>
+<!-- 出庫依頼送信 -->
+@{
+    var isDisabled = (Model.ItemOptions is null) || Model.ItemOptions.Count() == 0;
 }
+
+<div class="row mx-0
+    border rounded-3 shadow-sm bg-white py-3">
+    <div class="col">
+        <form method="post" asp-page-handler="Order" class="app-padding">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <!-- 部品セレクタ -->
+                <div class="col">
+                    <!-- セレクタ本体 -->
+                    <label class="form-label">商品選択</label>
+                    <select asp-for="SelectedItem" asp-items="Model.ItemOptions"
+                            id="item-selector"
+                            class="form-select @(Model.ErrorMessage is not null ? "is-invalid" : "")"
+                            disabled = "@isDisabled" >
+
+                        <option id="default-option" value="">@(isDisabled ? "-- 出荷可能商品なし --" : "-- 商品を選択してください --")</option>
+                        <!--
+                                ここに出荷可能な商品のリストが入る
+                                出荷可能な商品があるときは、初期値が「-- 商品を選択 --」となる
+                            -->
+                    </select>
+                    <!-- エラーメッセージ -->
+                    @if (Model.ErrorMessage is not null)
+                    {
+                        <div class="invalid-feedback d-block">
+                            @Model.ErrorMessage
+                        </div>
+                    }
+                </div>
+                <!-- 登録ボタン -->
+                <div class="col-auto">
+                    <label class="form-label invisible">dummy</label>
+                    <button type="submit" id="order-button" class="btn btn-primary d-block" disabled="@isDisabled">登録</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 未完了JOB一覧 -->
+<div class="row mx-0 list-frame
+    border rounded-3 shadow-sm bg-white py-3">
+    <div class="col h-100">
+        <form method="post" asp-page-handler="Cancel" class="scroll-body">
+            <h5 class="px-3 py-0 mb-3 text-primary-emphasis">進行中の出庫依頼</h5>
+            <div id="incomplete-job-container" class="scroll-content">
+                @* <div class="">現在進行中の出庫依頼は存在しません。</div> *@
+                <!--
+                    ここに未完了出庫依頼の一覧が入る
+                -->
+            </div>
+        </form>
+    </div>
+</div>

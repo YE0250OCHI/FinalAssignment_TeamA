@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
+using SimpleAutomaticStorageSystem.Server.UseCases.Request;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 using System.Text.Json;
 
 namespace SimpleAutomaticStorageSystem.Server.Controllers;
@@ -34,7 +35,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // オンライン状態へ移行する
             await jobManager.ChangeEquipmentOnlineAsync(
@@ -96,7 +97,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // JOBの割当を行う
             // その自動倉庫は出庫JOBを実行可能な状態ではない -> 422スロー
@@ -175,7 +176,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // 次遷移状態を設定
             JobStatus nextStatus = JobStatus.Transferring;
@@ -240,7 +241,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // JOBの取得
             // JOB番号がない -> 404スロー
@@ -313,7 +314,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // 次遷移状態を設定
             JobStatus nextStatus = JobStatus.Completed;
@@ -377,7 +378,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // JSONの確認
             // 変換失敗で、JsonException発生 -> 400スロー
@@ -463,7 +464,7 @@ public class RacksApiController(
         {
             // ログ＆認証を行う
             // 未登録自動倉庫からの要求 -> 401スロー
-            RacksApiInitialize(HttpContext, out var equipmentId);
+            RacksApiInitialize(out var equipmentId);
 
             // JSONの確認
             // 変換失敗で、JsonException発生 -> 400スロー
@@ -543,8 +544,10 @@ public class RacksApiController(
     // =========================
 
     // API受信時の初期化処理
-    private void RacksApiInitialize(HttpContext context, out string equipmentId)
+    private void RacksApiInitialize(out string equipmentId)
     {
+        HttpContext context = HttpContext;
+
         string? ip = context.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? string.Empty;
         HttpRequest request = context.Request;
 

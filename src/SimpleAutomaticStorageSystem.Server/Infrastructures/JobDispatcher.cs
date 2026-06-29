@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 using System.Text.Json;
 
 namespace SimpleAutomaticStorageSystem.Server.Infrastructures;

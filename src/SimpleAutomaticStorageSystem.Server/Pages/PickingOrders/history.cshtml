@@ -1,64 +1,122 @@
 ﻿@page "/picking-orders/history"
 @model HistoryModel
 @{
-	Layout = "_Layout";
+    ViewData["Title"] = "出庫履歴";
 }
-<div class="sticky-top bg-white border-bottom shadow-sm p-2" style="top: 56px; z-index: 999;">
-	<div class="mb-4">
-		<form method="get">
-			<div class="row g-2 align-items-center mb-2">
-				<div class="col-5">
-					<input type="date" name="from" class="form-control form-control-sm border-dark shadow-sm" />
-				</div>
-				<div class="col-1 text-center">～</div>
-				<div class="col-5">
-					<input type="date" name="to" class="form-control form-control-sm border-dark shadow-sm" />
-				</div>
-			</div>
 
-			<div class="row g-2 align-items-center mb-3">
-				<div class="col-8">
-					<select name="sort" class="form-select form-select-sm border-dark shadow-sm" onchange="this.form.submit()">
-						<option value="Latest" selected>最新</option>
-						<option value="Oldest">古い順</option>
-					</select>
-				</div>
-			</div>
-		</form>
+<!-- フィルタ -->
+<div class="row mx-0
+    border rounded-3 shadow-sm bg-white py-3">
+    <div class="col">
+        <form method="get" id="history-filter-form" class="app-padding">
+            <div class="d-flex flex-column justify-content-center gap-3
+                flex-md-row align-items-md-center gap-md-2">
+                <!-- 日付 -->
+                <div class="d-flex flex-row flex-md-column">
+                    <label class="form-label col-2 col-md-auto">From</label>
+                    <input class="form-control" type="date" asp-for="FromDate" id="from-date" />
+                </div>
+                <div class="d-none d-md-block">
+                    <label class="form-label invisible">d</label>
+                    <span class="d-block text-center">～</span>
+                </div>
+                <div class="d-flex flex-row flex-md-column">
+                    <label class="form-label col-2 col-md-auto">To</label>
 
-		<div class="row g-2 align-items-center mb-3">
-			<div class="col-4 offset-8 text-end">
-				<form method="get">
-					<button type="submit" class="btn btn-primary btn-sm fw-bold w-100 shadow-sm">更新</button>
-				</form>
-			</div>
-		</div>
-	</div>
+                    <div class="flex-grow-1">
+                        <input class="form-control" type="date" asp-for="ToDate" id="to-date" />
+                        <span asp-validation-for="ToDate" class="text-danger" id="date-error"></span>
+                    </div>
+                </div>
+                <!-- ソート順 -->
+                <div class="d-flex flex-row flex-md-column ms-md-2">
+                    <label class="form-label col-2 col-md-auto">Sort</label>
+                    <select class="form-select" asp-for="SelectedOption" onchange="this.form.submit()">
+                        <option value="latest">最新順</option>
+                        <option value="oldest">登録順</option>
+                    </select>
+                </div>
+                <!-- 更新ボタン -->
+                <div class="col-auto ms-md-auto">
+                    <label class="form-label d-none
+                    d-md-block col-md-auto invisible">dmy</label>
+                    <button type="submit" class="btn btn-primary d-block col-12 ms-md-auto">更新</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
-<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
-	<div class="d-flex flex-column gap-2">
-		<div class="card bg-light rounded-4 p-3 border-secondary border-opacity-25">
-			<div id="finishedTskListContainer" class="d-flex flex-column gap-2">
-				<!-- JOB履歴表示 Indexに合わせて修正 -->
-				<table>
-					<tbody>
-						@foreach(var job in Model.ClosedJobList)
-						{
-							<tr>
-								<td>@job.Status</td>
-								<td>@job.ItemName</td>
-								<td>@job.ClosedAt</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
+<!-- 出庫履歴一覧 -->
+<div class="row mx-0 list-frame
+    border rounded-3 shadow-sm bg-white py-3">
+    <div class="col h-100 scroll-body">
+        <h5 class="px-3 py-0 mb-3 text-primary-emphasis">終了した出庫依頼</h5>
+        <div class="scroll-content">
+            <!-- ここに未完了出庫依頼の一覧が入る -->
+            @if (Model.HistoryJobs.Count == 0)
+            {
+                <div class="">出庫履歴は存在しません。</div>
+                return;
+            }
 
-		@if (!Model.ClosedJobList.Any())
-		{
-			<div class="text-center text-secondary py-3 small">対象の履歴はありません。</div>
-		}
-	</div>
+            @foreach (var history in Model.HistoryJobs)
+            {
+                // ステータス変換
+                var statusText = history.Status switch
+                {
+                    UseCases.Response.RequestJobStatus.Waiting => "待機中",
+                    UseCases.Response.RequestJobStatus.Transferring => "搬送中",
+                    UseCases.Response.RequestJobStatus.WaitOut => "取出し待ち",
+                    UseCases.Response.RequestJobStatus.Completed => "完了",
+                    UseCases.Response.RequestJobStatus.Canceled => "キャンセル",
+                    UseCases.Response.RequestJobStatus.Aborted => "異常終了",
+                    _ => throw new InvalidOperationException("未定義の状態が指定された")
+                };
+
+                var statusColor = history.Status switch
+                {
+                    UseCases.Response.RequestJobStatus.Waiting => "text-bg-secondary",
+                    UseCases.Response.RequestJobStatus.Transferring => "text-bg-warning",
+                    UseCases.Response.RequestJobStatus.WaitOut => "text-bg-info",
+                    UseCases.Response.RequestJobStatus.Completed => "text-bg-success",
+                    UseCases.Response.RequestJobStatus.Canceled => "text-bg-warning",
+                    UseCases.Response.RequestJobStatus.Aborted => "text-bg-danger",
+                    _ => throw new InvalidOperationException("未定義の状態が指定された")
+                };
+
+                // 表示部
+                <div class="card shadow-sm mb-2">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <!-- バッジ用の固定領域 -->
+                            <div class="d-flex justify-content-center align-items-center flex-shrink-0" style="width: 5.5rem;">
+                                <span class="badge @(statusColor) p-2 text-center" style="width: 4.5rem;">@statusText</span>
+                            </div>
+                            <div>
+                                <!-- 依頼部品名 -->
+                                <div class="fw-bold text-start">
+                                    @history.ItemName
+                                    <span class="text-body-tertiary small ms-1">(@history.ItemCode)</span>
+                                </div>
+                                <!-- JOB番号 -->
+                                <div class="text-body-tertiary small mt-1">
+                                    @history.JobId
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 完了日 -->
+                        <div class="ms-auto d-md-flex text-start me-3">
+                            <div>
+                                @history.ClosedAt.ToString("yyyy/MM/dd")
+                            </div>
+                            <div>
+                                @history.ClosedAt.ToString("hh:MM:ss")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>

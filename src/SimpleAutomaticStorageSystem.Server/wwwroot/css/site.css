@@ -6,6 +6,10 @@ html {
   html {
     font-size: 16px;
   }
+
+    .app-shell {
+        height: 100dvh;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -28,4 +32,58 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+.app-shell {
+    height: 94dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+}
+
+.app-main {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.work-page {
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    overflow: hidden;
+    padding-bottom: 1rem;
+    box-sizing: border-box;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.app-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.list-frame {
+    height: 100%;
+    min-height: 0;
+}
+
+.list-frame > .col {
+    height: 100%;
+    min-height: 0;
+}
+
+.scroll-body {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.scroll-content {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }

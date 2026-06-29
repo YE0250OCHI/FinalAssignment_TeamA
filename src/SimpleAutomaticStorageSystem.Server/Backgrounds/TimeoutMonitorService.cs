@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Controllers;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 
 namespace SimpleAutomaticStorageSystem.Server.Backgrounds;

@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 using System.Text;
 
 namespace SimpleAutomaticStorageSystem.Server.Repositories;

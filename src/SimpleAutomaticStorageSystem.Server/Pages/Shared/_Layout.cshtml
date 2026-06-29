@@ -1,146 +1,78 @@
-﻿@{
-    var pageName = ViewContext.RouteData.Values["page"]?.ToString();
-
-    string title = "default page";
-    if (pageName.Contains("picking-orders/history"))
-    {
-        title = "履歴";
-    }
-    else if (pageName.Contains("picking-orders"))
-    {
-        title = "出庫依頼";
-    }
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0d6efd">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>@ViewData["Title"]</title>
-
+    <title>@ViewData["Title"] - 出庫管理システム</title>
     <script type="importmap"></script>
 
-    <link rel="stylesheet"
-          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SimpleAutomaticStorageSystem.Server.styles.css" asp-append-version="true" />
 
-    <link rel="stylesheet"
-          href="~/css/site.css"
-          asp-append-version="true" />
-
-    <link rel="stylesheet"
-          href="~/SimpleAutomaticStorageSystem.Server.styles.css"
-          asp-append-version="true" />
 </head>
 
-<body>
-
-    <!-- ヘッダー -->
-    <header class="fixed-top bg-white shadow-sm">
-        <div class="container-fluid py-3">
-
-            <div class="d-flex
-                        justify-content-between
-                        align-items-center
-                        border-bottom
-                        border-primary
-                        border-2
-                        pb-2">
-
-                <h2 class="text-primary fs-3 fw-bold m-0">
-                    @title
-                </h2>
-
+<body class="bg-primary app-shell">
+    <header>
+        <nav class="navbar navbar-toggleable-xxl navbar-light">
+            <div class="container">
+                <span class="navbar-brand fs-3 fw-bold text-white">@ViewData["Title"]</span>
                 <div class="dropdown">
-
-                    <button id="menuButton"
-                            class="btn btn-outline-primary"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        ☰
+                    <button class="navbar-toggler bg-white" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
                     </button>
-
-                    <ul id="menuDropdown"
-                        class="dropdown-menu dropdown-menu-end shadow-sm"
-                        style="min-width:150px; z-index:1000;">
-
+                    <ul class="dropdown-menu dropdown-menu-end py-2">
                         <li>
-                            <a asp-page="/picking-orders"
-                               class="dropdown-item p-2">
+                            <a class="dropdown-item text-primary py-2" asp-area="" asp-page="/PickingOrders/Index">
                                 出庫依頼
                             </a>
                         </li>
-
                         <li>
-                            <a asp-page="/picking-orders/history"
-                               class="dropdown-item p-2">
-                                履歴
+                            <a class="dropdown-item text-primary py-2" asp-area="" asp-page="/PickingOrders/History">
+                                出庫履歴
                             </a>
                         </li>
-
                     </ul>
-
                 </div>
-
             </div>
-
-        </div>
+        </nav>
     </header>
 
-
-    <!-- メイン -->
-    <main class="container-fluid pt-5 mt-4">
-
-        <div class="row justify-content-center">
-
-            <!--
-                スマホ:100%
-                タブレット:約83%
-                PC:約67%
-            -->
-            <div class="col-12 col-md-10 col-lg-8">
-
-                @RenderBody()
-
-            </div>
-
+    <main role="main" class="app-main">
+        <div class="container work-page">
+            @RenderBody()
         </div>
-
     </main>
 
-    @await RenderSectionAsync("Scripts", required: false)
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="~/js/site.js"
-            asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 
     <script>
         console.log(window.isSecureContext);
 
         if ('serviceWorker' in navigator) {
 
-            window.addEventListener('load', () => {
+        window.addEventListener('load', () => {
 
-                navigator.serviceWorker
-                    .register('/service-worker.js')
+        navigator.serviceWorker
+        .register('/service-worker.js')
 
-                    .then(reg =>
-                        console.log(
-                            'Service Worker 登録成功！ Scope:',
-                            reg.scope))
+        .then(reg =>
+        console.log(
+        'Service Worker 登録成功！ Scope:',
+        reg.scope))
 
-                    .catch(err =>
-                        console.error(
-                            'Service Worker 登録失敗...',
-                            err));
-            });
+        .catch(err =>
+        console.error(
+        'Service Worker 登録失敗...',
+        err));
+        });
         }
     </script>
 

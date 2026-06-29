@@ -1,6 +1,6 @@
 ﻿using SimpleAutomaticStorageSystem.Server.Domains;
 
-namespace SimpleAutomaticStorageSystem.Server.Dto;
+namespace SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 public class AssignedJobDto
 {

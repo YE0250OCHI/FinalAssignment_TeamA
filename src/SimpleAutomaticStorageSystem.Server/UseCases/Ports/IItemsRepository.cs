@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 
@@ -77,7 +78,7 @@ public interface IItemsRepository
     /// <param name="connection">DB接続</param>
     /// <param name="transaction">トランザクション、nullの場合はトランザクションなし</param>
     /// <returns>品種データ</returns>
-    Task<IEnumerable<ItemTypeModel>> GetPickableItemListAsync(
+    Task<IEnumerable<InventoryItemsRawInfo>> GetPickableItemListAsync(
         SqlConnection connection,
         SqlTransaction? transaction);
 

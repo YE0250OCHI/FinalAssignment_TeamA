@@ -1,9 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.Response;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -142,9 +144,9 @@ public class JobViewer(
         JobStatus jobStatus) =>
             jobStatus switch
             {
-                JobStatus.Unassigned or
-                JobStatus.Assigned => RequestJobStatus.Waiting,
-                JobStatus.Transferring => RequestJobStatus.Working,
+                JobStatus.Unassigned => RequestJobStatus.Waiting,
+                JobStatus.Assigned or
+                JobStatus.Transferring => RequestJobStatus.Transferring,
                 JobStatus.WaitOut => RequestJobStatus.WaitOut,
                 JobStatus.Completed => RequestJobStatus.Completed,
                 JobStatus.Canceled => RequestJobStatus.Canceled,

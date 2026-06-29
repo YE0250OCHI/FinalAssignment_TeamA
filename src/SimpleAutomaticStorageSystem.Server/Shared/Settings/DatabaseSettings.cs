@@ -1,4 +1,4 @@
-﻿namespace SimpleAutomaticStorageSystem.Server.Shared;
+﻿namespace SimpleAutomaticStorageSystem.Server.Shared.Settings;
 
 public class DatabaseSettings
 {
