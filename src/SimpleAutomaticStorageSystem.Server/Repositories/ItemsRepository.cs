@@ -1,8 +1,9 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
+using SimpleAutomaticStorageSystem.Server.Repositories.Dto;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 using System.Text;
 
 namespace SimpleAutomaticStorageSystem.Server.Repositories;
@@ -116,32 +117,54 @@ public class ItemsRepository:IItemsRepository
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ItemTypeModel>> GetPickableItemListAsync(
+    public Task<IEnumerable<InventoryItemsRawInfo>> GetPickableItemListAsync(
         SqlConnection connection,
         SqlTransaction? transaction)
     {
         const string sql = """            
-            SELECT DISTINCT
+            SELECT
                 t.code AS [ItemCode],
-                t.name AS [ItemName]
+                t.name AS [ItemName],
+                COALESCE(i.StockCount, 0) - COALESCE(j.JobCount, 0)
+                    AS [AvailableCount]
             FROM
                 item_types t
-            JOIN
-                items i ON i.item_code = t.code
+            LEFT JOIN
+            (
+                SELECT
+                    item_code,
+                    COUNT(*) AS StockCount
+                FROM
+                    items
+                WHERE
+                    stock_status = @Stored
+                GROUP BY
+                    item_code
+            ) i ON i.item_code = t.code
+            LEFT JOIN
+            (
+                SELECT
+                    item_code,
+                    COUNT(*) AS JobCount
+                FROM
+                    jobs
+                WHERE
+                    job_status = @Unassigned
+                GROUP BY
+                    item_code
+            ) j ON j.item_code = t.code
             WHERE
-                i.stock_status IN @Statuses
+                COALESCE(i.StockCount, 0) > COALESCE(j.JobCount, 0)
             ORDER BY
                 t.code ASC
             """;
 
-        return connection.QueryAsync<ItemTypeModel>(
+        return connection.QueryAsync<InventoryItemsRawInfo>(
             sql,
             new
             {
-                Statuses = new[]
-                {
-                    StockStatus.Stored
-                }
+                Stored = StockStatus.Stored,
+                Unassigned = JobStatus.Unassigned
             },
             transaction: transaction);
     }

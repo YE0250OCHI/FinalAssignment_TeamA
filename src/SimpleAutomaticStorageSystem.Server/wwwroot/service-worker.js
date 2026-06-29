@@ -1,7 +1,7 @@
 ﻿const CACHE_NAME = "app-v1";
 
 const STATIC_FILES = [
-    "/",
+    "/picking-orders",
     "/css/site.css",
     "/js/site.js",
     "/icons/icon-192.png",
@@ -14,10 +14,20 @@ self.addEventListener("install", event => {
 
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(STATIC_FILES))
+            .then(async (cache) => {
+                for (const file of STATIC_FILES) {
+                    try {
+                        await cache.add(file);
+                        console.log(`キャッシュ成功: ${file}`);
+                    } catch (error) {
+                        console.error(`キャッシュ失敗: ${file}`, error);
+                    }
+                }
+
+                await self.skipWaiting();
+            })
     );
 
-    self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {

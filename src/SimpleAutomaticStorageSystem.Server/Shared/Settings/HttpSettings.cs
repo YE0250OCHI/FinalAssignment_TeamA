@@ -1,4 +1,4 @@
-﻿namespace SimpleAutomaticStorageSystem.Server.Shared;
+﻿namespace SimpleAutomaticStorageSystem.Server.Shared.Settings;
 
 /// <summary>
 /// Http通信の設定

@@ -1,4 +1,4 @@
-﻿using SimpleAutomaticStorageSystem.Server.Dto;
+﻿using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 

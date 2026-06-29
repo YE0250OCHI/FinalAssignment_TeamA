@@ -87,5 +87,6 @@ GO
 INSERT INTO dbo.equipments(id, equipment_status, available_capacity)
 VALUES
 	('AS15', 0, 50),
-	('AS24', 0, 60);
+	('AS24', 0, 60),
+	('AS16', 0, 54);
 GO

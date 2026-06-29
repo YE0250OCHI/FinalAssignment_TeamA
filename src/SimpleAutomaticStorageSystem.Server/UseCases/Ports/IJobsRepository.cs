@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 

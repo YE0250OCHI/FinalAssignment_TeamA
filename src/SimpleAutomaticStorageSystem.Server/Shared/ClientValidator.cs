@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 
 namespace SimpleAutomaticStorageSystem.Server.Shared;
 
@@ -28,16 +29,18 @@ public class ClientValidator(IOptions<HttpSettings> options)
     /// スマホ認証を行う
     /// </summary>
     /// <param name="ipAddress">IPアドレス</param>
-    /// <returns></returns>
-    public bool IsValidDevice(string ipAddress, out string? device) =>
-        _devicesMap.TryGetValue(ipAddress, out device);
-    
+    /// <param name="deviceId">スマホID</param>
+    /// <returns>検証結果</returns>
+    public bool IsValidDevice(string ipAddress, out string? deviceId) =>
+        _devicesMap.TryGetValue(ipAddress, out deviceId);
+
     /// <summary>
     /// 自動倉庫の認証を行う
     /// </summary>
     /// <param name="ipAddress">IPアドレス</param>
-    /// <returns></returns>
-    public bool IsValidEquipment(string ipAddress, out string? device) =>
-        _equipmentsMap.TryGetValue(ipAddress, out device);
+    /// <param name="equipmentId">自動倉庫ID</param>
+    /// <returns>検証結果</returns>
+    public bool IsValidEquipment(string ipAddress, out string? equipmentId) =>
+        _equipmentsMap.TryGetValue(ipAddress, out equipmentId);
 
 }

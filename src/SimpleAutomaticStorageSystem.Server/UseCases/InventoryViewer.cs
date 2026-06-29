@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.Response;
 
 namespace SimpleAutomaticStorageSystem.Server.UseCases;
 
@@ -14,18 +14,25 @@ public class InventoryViewer(
     private readonly string _defaultConnection = settings.Value.DefaultConnection;
 
     /// <summary>
-    /// 部品リストを取得
+    /// 商品リストを取得
     /// </summary>
-    /// <returns>部品リスト</returns>
-    public async Task<List<ItemTypeModel>> GetItemListAsync()
+    /// <returns>商品リスト</returns>
+    public async Task<List<AvailableItemsResponse>> GetItemListAsync()
     {
         // DB接続開始
         await using SqlConnection connection = new(_defaultConnection);
         await connection.OpenAsync();
 
         // item_typesテーブルの中身を取得
-        return [
-            .. await items.GetPickableItemListAsync(connection, null)];
-    }
+        var itemlist = await items.GetPickableItemListAsync(connection, null);
 
+        // 公開用に加工して返却
+        return [
+            .. itemlist.Select(x=>
+                new AvailableItemsResponse
+                {
+                    KeyCode = x.ItemCode,
+                    Text = $"{x.ItemCode} : {x.ItemName}"
+                })];
+    }
 }

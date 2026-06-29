@@ -6,6 +6,7 @@ using SimpleAutomaticStorageSystem.Server.Backgrounds;
 using SimpleAutomaticStorageSystem.Server.Infrastructures;
 using SimpleAutomaticStorageSystem.Server.Repositories;
 using SimpleAutomaticStorageSystem.Server.Shared;
+using SimpleAutomaticStorageSystem.Server.Shared.Settings;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
 using System.Text.Json;
@@ -137,12 +138,14 @@ app.MapScalarApiReference(
 ILogger<Program> logger =
     app.Services.GetRequiredService<ILogger<Program>>();
 
+logger.LogInformation("サーバー起動を試行");
+
 app.Lifetime.ApplicationStarted.Register(() =>
 {
-    logger.LogInformation("サーバー起動");
+    logger.LogInformation("サーバー起動完了");
 });
 
-app.Lifetime.ApplicationStopping.Register(() =>
+app.Lifetime.ApplicationStopped.Register(() =>
 {
     logger.LogInformation("サーバー停止");
 });

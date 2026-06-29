@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using SimpleAutomaticStorageSystem.Server.Domains;
-using SimpleAutomaticStorageSystem.Server.Dto;
 using SimpleAutomaticStorageSystem.Server.Shared;
 using SimpleAutomaticStorageSystem.Server.UseCases;
 using SimpleAutomaticStorageSystem.Server.UseCases.Ports;
+using SimpleAutomaticStorageSystem.Server.UseCases.Response;
+using SimpleAutomaticStorageSystem.Server.UseCases.UseCaseDto;
+using System.ComponentModel.DataAnnotations;
 
 namespace SimpleAutomaticStorageSystem.Server.Pages.PickingOrders;
 
@@ -22,12 +23,13 @@ public class IndexModel(
     [TempData]
     public string? ErrorMessage { get; set; }
 
-    // ドロップダウンリスト本体
-    public List<SelectListItem> ItemList { get; set; } = [];
-
-    // ドロップダウンリストの選択肢
+    // 出庫依頼対象の商品
     [BindProperty(SupportsGet = true)]
-    public string SelectedItem { get; set; } = string.Empty;
+    [Required(ErrorMessage = "商品を選択してください。")]
+    public string? SelectedItem { get; set; }
+
+    // 出庫依頼対象リスト
+    public SelectList? ItemOptions { get; set; }
 
     // メソッド ：一覧ページ表示 
     public async Task<IActionResult> OnGetAsync()
@@ -60,7 +62,7 @@ public class IndexModel(
     }
 
     // メソッド　：出庫依頼
-    public async Task<IActionResult> OnPostAddOrderAsync()
+    public async Task<IActionResult> OnPostOrderAsync()
     {
         // 認可外スマホの場合は拒否
         if (!IsValidDevice(out string? deviceId))
@@ -91,7 +93,7 @@ public class IndexModel(
             // 出庫JOBの割当試行
             AssignedJobDto? jobDto = await jobAssigner.AssignItemForJobAsync(jobId);
 
-            if (jobDto is not null) 
+            if (jobDto is not null)
             {
                 // 割当成功したらプッシュ送信
                 await jobDispatcher.PushAsync(jobDto);
@@ -144,10 +146,9 @@ public class IndexModel(
             {
                 throw new InvalidOperationException("JOB番号が指定されていない。");
             }
-
+            
             // 出庫JOBキャンセルを呼出し
             await jobManager.CancelUnassignedJobAsync(jobId, deviceId);
-            
 
             // 正常終了として元に戻る
             return RedirectToPage(new { jobId = (string?)null }); // GET再実行
@@ -231,64 +232,13 @@ public class IndexModel(
     private async Task LoadItemListAsync()
     {
         // 部品リストをDBから取得
-        List<ItemTypeModel> itemTypes =
+        List<AvailableItemsResponse> itemTypes =
             await inventoryViewer.GetItemListAsync();
 
         // ドロップダウンリストに格納
-        ItemList =
-            [.. itemTypes.Select(x =>
-                    new SelectListItem
-                    {
-                        Text = $"{x.ItemCode} {x.ItemName}",
-                        Value = x.ItemCode
-                    })];
+        ItemOptions = new SelectList(
+            itemTypes,
+            nameof(AvailableItemsResponse.KeyCode),
+            nameof(AvailableItemsResponse.Text));
     }
-
-
-
-
-
-    /*
-     * JSON変換はJS側の仕事
-     * 
-     * 
-     * 
-     * 
-    // メソッド　：ステータスを日本語に変換
-    private string ConvertStatus(string apiStatus)
-    {
-        return apiStatus switch
-        {
-            "Waiting" => "取出待ち",
-            "Processing" => "作業中",
-            "Recovering" => "調整中",
-            "Pending" => "待機中",
-            _ => apiStatus // 想定外はそのまま
-        };
-    }
-    
-    // メソッド　：エラーコードを日本語に変換
-    public async Task<string> HandleApiErrorAsync(int statusCode)
-    {
-        string errorCode = "";
-
-        // 設計書のエラーメッセージ表を完全再現
-        return (statusCode, errorCode) switch
-        {
-            (400, "INVALID_REQUEST") => "入力形式が不正です。\n通常の入力方法で入力してください。",
-            (400, "INVALID_QUERY") => "入力形式が不正です。\n通常の入力方法で入力してください。",
-            (403, "UNREGISTERED_DEVICE") => "端末が登録されていません。\nサーバの登録端末を確認してください。",
-            (403, "ACCESS_DENIED_JOB") => "JOB削除は登録した端末からしか行えません。",
-            (404, "JOB_NOT_FOUND") => "指定したJOBが存在しません。\n画面を更新してください。",
-            (422, "OUT_OF_STOCK") => "在庫が不足しています。\n入庫後、再度出庫リクエストしてください。",
-            (422, "INVALID_PRODUCT_ID") => "入力形式が不正です。\n通常の入力方法で入力してください。",
-            _ => $"予期せぬエラーが発生しました。(Status: {statusCode})"
-        };
-    }
-    *
-    *
-    *
-    *
-    */
-
 }
